@@ -1,0 +1,411 @@
+let loadedData = []; // {sheet_row, name, text, status, idnumber(hidden), domain, did, numbercgr, cgr_row, cgr_marked, checked}
+let searchQuery = "";
+
+const FIREBERRY_LOGO_URL = "https://app.fireberry.com/app/static/media/fireberry-logo.ebef34ab.svg";
+
+/* Helpers */
+function setCounts(){
+  document.getElementById("countPill").innerHTML =
+    `<span class="dot dot-amber"></span> נטענו: ${loadedData.length}`;
+
+  const selected = loadedData.filter(x => x.checked).length;
+  document.getElementById("selectedPill").innerHTML =
+    `<span class="dot dot-blue"></span> מסומנים: ${selected}`;
+}
+
+function escapeHtml(str){
+  return (str ?? "").toString()
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function setSearch(val){
+  searchQuery = (val || "").trim().toLowerCase();
+  renderTable();
+}
+
+/* Load data */
+async function loadData() {
+    try{
+      const res = await fetch('/load-data');
+      const data = await res.json();
+  
+      if(!Array.isArray(data) || data.length === 0){
+        loadedData = [];
+        renderTable();
+        alert("אין לקוחות שממתינים לשירות סמס");
+        return;
+      }
+  
+      loadedData = data.map(x => ({
+        ...x,
+        domain: "",
+        did: "",
+        checked: false,
+        fbLoading: false
+      }));
+  
+      renderTable();
+    }catch(e){
+      alert("שגיאה בטעינת נתונים: " + e);
+    }
+  }
+
+/* Render */
+function renderTable(){
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+
+  const filtered = loadedData
+    .map((item, idx) => ({ item, idx }))
+    .filter(({ item }) => {
+      if(!searchQuery) return true;
+      const name = (item.name || "").toLowerCase();
+      const domain = (item.domain || "").toLowerCase();
+      const did = (item.did || "").toLowerCase();
+      return name.includes(searchQuery) || domain.includes(searchQuery) || did.includes(searchQuery);
+    });
+
+  filtered.forEach(({ item, idx }) => {
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td class="right">
+        <input type="checkbox"
+          ${item.checked ? "checked" : ""}
+          onchange="toggleCheckedByRow(${item.sheet_row}, this.checked)" />
+      </td>
+
+      <td class="right">
+        <div><b>${escapeHtml(item.name)}</b></div>
+        <div class="small">לקוח</div>
+
+        <button class="fb-mini ${item.fbLoading ? "disabled" : ""}"
+          type="button"
+          title="משוך Domain/DID מ-Fireberry"
+          onclick="fireberryFill(${idx})"
+          ${item.fbLoading ? "disabled" : ""}>
+          <img class="fb-mini-img" src="${FIREBERRY_LOGO_URL}" alt="Fireberry" />
+          <span>Fireberry</span>
+        </button>
+      </td>
+
+      <td class="right">
+        <div class="sms">${escapeHtml(item.text)}</div>
+      </td>
+
+      <td class="right">
+        <input class="input" placeholder="לדוגמה: 5555"
+          value="${escapeHtml(item.domain)}"
+          oninput="updateField(${idx}, 'domain', this.value)" />
+      </td>
+
+      <td class="right">
+        <input class="input" placeholder="031234567"
+          value="${escapeHtml(item.did)}"
+          oninput="updateField(${idx}, 'did', this.value)" />
+      </td>
+
+      <td class="right">
+        <span class="cgr-pill ${item.cgr_marked ? 'cgr-ok' : 'cgr-missing'}">
+          <span class="dot ${item.cgr_marked ? 'dot-green' : 'dot-amber'}"></span>
+          ${escapeHtml(item.numbercgr || "")}
+        </span>
+      </td>
+
+      <td class="right">
+        <span class="badge"><span class="dot dot-amber"></span> ${escapeHtml(item.status || "ממתין")}</span>
+      </td>
+
+      <td class="right">
+        <span class="pill"><span class="dot dot-blue"></span> ${item.sheet_row}</span>
+      </td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+
+  setCounts();
+}
+
+/* Selection & updates */
+function updateField(idx, field, value){
+  loadedData[idx][field] = value;
+}
+
+function selectAll(val){
+  loadedData.forEach(x => x.checked = val);
+
+  document.querySelectorAll("#dataTable tbody input[type='checkbox']").forEach(cb => {
+    cb.checked = val;
+  });
+
+  setCounts();
+}
+
+function getSelected(){
+  return loadedData.filter(x => x.checked === true);
+}
+
+function toggleCheckedByRow(sheetRow, checked){
+  const item = loadedData.find(x => x.sheet_row === sheetRow);
+  if(!item) return;
+  item.checked = checked;
+  setCounts();
+}
+
+function validateSelectedForExport(selected){
+  const missing = selected.filter(x =>
+    !(x.domain || "").trim() ||
+    !(x.did || "").trim() ||
+    !(x.numbercgr || "").trim()
+  );
+  if(missing.length > 0){
+    alert("יש לקוחות מסומנים בלי Domain/DID/NumberCGR. אנא מלא לפני יצוא.");
+    return false;
+  }
+  return true;
+}
+
+/* Duplicate handling (auto-uncheck) */
+function validateNoDuplicatesBeforeExport(selected){
+  function autoUncheckDuplicates(fieldName){
+    const firstByKey = new Map();
+    const removed = [];
+
+    selected.forEach(item => {
+      const raw = (item[fieldName] || "").trim();
+      const key = raw.toLowerCase();
+      if(!key) return;
+
+      if(!firstByKey.has(key)){
+        firstByKey.set(key, item);
+      }else{
+        removed.push({ value: raw, item, first: firstByKey.get(key), field: fieldName });
+      }
+    });
+
+    removed.forEach(d => { d.item.checked = false; });
+    return removed;
+  }
+
+  const removedDomain = autoUncheckDuplicates("domain");
+  const removedDid = autoUncheckDuplicates("did");
+  const allRemoved = [...removedDomain, ...removedDid];
+
+  if(allRemoved.length === 0) return true;
+
+  let msg = `נמצאו כפילויות.\nביטלתי סימון אוטומטית לשורות הכפולות (השארתי את הראשונה מסומנת).\n\n`;
+  allRemoved.slice(0, 12).forEach((d, i) => {
+    msg += `${i+1}) ${d.field.toUpperCase()} "${d.value}"\n   נשאר: ${d.first.name} (row ${d.first.sheet_row})\n   הוסר סימון: ${d.item.name} (row ${d.item.sheet_row})\n\n`;
+  });
+  if(allRemoved.length > 12){
+    msg += `...ועוד ${allRemoved.length - 12} כפילויות.\n`;
+  }
+
+  alert(msg);
+  renderTable();
+  return true;
+}
+
+/* Mark done */
+async function markDoneSelected(){
+  const selected = getSelected();
+  if(selected.length === 0){
+    alert("לא נבחרו לקוחות.");
+    return;
+  }
+
+  const customers = selected.map(x => ({
+    sheet_row: x.sheet_row,
+    name: x.name || "",
+    domain: (x.domain || "").trim(),
+    did: (x.did || "").trim()
+  }));
+
+  try{
+    const res = await fetch('/mark-done', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ customers })
+    });
+
+    const json = await res.json();
+    if(!res.ok || !json.ok){
+      alert("שגיאה בעדכון סטטוס: " + (json.message || "Unknown"));
+      return;
+    }
+
+    alert(`עודכן ל"בוצע": ${json.updated} לקוחות\nנרשם לוג ב: log/created.log`);
+    await loadData();
+
+  }catch(e){
+    alert("שגיאה בעדכון סטטוס: " + e);
+  }
+}
+
+/* Export CSV */
+async function exportSelected(){
+  let selected = getSelected();
+  if(selected.length === 0){
+    alert("לא נבחרו לקוחות.");
+    return;
+  }
+
+  if(!validateSelectedForExport(selected)) return;
+
+  validateNoDuplicatesBeforeExport(selected);
+
+  selected = getSelected();
+  if(selected.length === 0){
+    alert("לא נשארו לקוחות מסומנים אחרי טיפול בכפילויות.");
+    return;
+  }
+
+  const exportData = selected.map(x => ({
+    Domain: (x.domain || "").trim(),
+    DID: (x.did || "").trim(),
+    NumberCGR: (x.numbercgr || "").trim(),
+    cgr_row: x.cgr_row,
+    Text: x.text || "",
+    Name: x.name || "",
+    sheet_row: x.sheet_row
+  }));
+
+  try{
+    const res = await fetch('/export', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(exportData)
+    });
+
+    if(!res.ok){
+      const j = await res.json().catch(()=>null);
+      alert("שגיאה ביצוא: " + (j?.message || res.statusText));
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "sms_export.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+
+  }catch(e){
+    alert("שגיאה ביצוא: " + e);
+  }
+}
+
+/* Fireberry per-row */
+async function fireberryFill(idx){
+  const item = loadedData[idx];
+  if(!item) return;
+
+  const idnumber = (item.idnumber || "").trim();
+  if(!idnumber){
+    alert("אין ח.פ (עמודה B) ללקוח הזה בגוגל-שיט.");
+    return;
+  }
+
+  if(item.fbLoading) return;
+  item.fbLoading = true;
+  renderTable();
+
+  try{
+    const res = await fetch('/fireberry-by-id', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ idnumber })
+    });
+
+    const json = await res.json().catch(()=>null);
+
+    if(!res.ok || !json?.ok){
+      alert("שגיאה ב-Fireberry: " + (json?.message || res.statusText));
+      return;
+    }
+
+    if(!json.found){
+      alert("לא נמצא לקוח ב-Fireberry לפי ח.פ (עמודה B).");
+      return;
+    }
+
+    if((json.domain || "").trim()) item.domain = (json.domain || "").trim();
+    if((json.did || "").trim()) item.did = (json.did || "").trim();
+
+  }catch(e){
+    alert("שגיאה ב-Fireberry: " + e);
+  }finally{
+    item.fbLoading = false;
+    renderTable();
+  }
+}
+
+/* Fireberry for ALL loaded customers */
+async function fireberryFillAll(){
+  if(!loadedData || loadedData.length === 0){
+    alert("אין לקוחות טעונים. לחץ קודם על 'טען לקוחות ממתין'.");
+    return;
+  }
+
+  if(!confirm(`למשוך Domain/DID מ-Fireberry עבור ${loadedData.length} לקוחות?`)) return;
+
+  let okCount = 0;
+  let notFoundCount = 0;
+  let errorCount = 0;
+
+  for(let i = 0; i < loadedData.length; i++){
+    const item = loadedData[i];
+    const idnumber = (item.idnumber || "").trim();
+
+    if(!idnumber){
+      notFoundCount++;
+      continue;
+    }
+
+    item.fbLoading = true;
+    renderTable();
+
+    try{
+      const res = await fetch('/fireberry-by-id', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ idnumber })
+      });
+
+      const json = await res.json().catch(()=>null);
+
+      if(!res.ok || !json?.ok){
+        errorCount++;
+        continue;
+      }
+
+      if(!json.found){
+        notFoundCount++;
+        continue;
+      }
+
+      if((json.domain || "").trim()) item.domain = (json.domain || "").trim();
+      if((json.did || "").trim()) item.did = (json.did || "").trim();
+
+      okCount++;
+
+    }catch(e){
+      errorCount++;
+    }finally{
+      item.fbLoading = false;
+      renderTable();
+    }
+  }
+
+  alert(`סיום משיכה מ-Fireberry:\n✅ עודכנו: ${okCount}\n❌ לא נמצאו/אין ח.פ: ${notFoundCount}\n⚠ שגיאות: ${errorCount}`);
+}

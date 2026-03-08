@@ -171,7 +171,7 @@ def get_pending_customers():
       H == ממתין AND K == לקוח הותקן
     Also includes:
       - idnumber (hidden)
-      - numbercgr from sheet חיפ_סמס!A312.. (aligned by order)
+      - numbercgr from sheet חיפ_סמס (only rows where column C empty)
       - cgr_row (for updates on export)
       - cgr_marked (green/yellow indicator from column B)
     """
@@ -204,35 +204,50 @@ def get_pending_customers():
             "status": status
         })
 
-    # Attach NumberCGR from חיפ_סמס
+    # Attach NumberCGR from חיפ_סמס (ONLY rows where column C empty)
     try:
         if pending:
             cgr_ws = client.open_by_key(SPREADSHEET_ID).worksheet(CGR_SHEET_NAME)
-            start = CGR_START_ROW
-            end = CGR_START_ROW + len(pending) - 1
-            cgr_vals = cgr_ws.get(f"A{start}:B{end}")
 
-            while len(cgr_vals) < len(pending):
-                cgr_vals.append([])
+            # read more rows so we can filter
+            cgr_data = cgr_ws.get(f"A{CGR_START_ROW}:C")
 
-            for idx, cust in enumerate(pending):
-                row_idx = CGR_START_ROW + idx
-                row_vals = cgr_vals[idx] if idx < len(cgr_vals) else []
+            free_numbers = []
 
-                a_val = row_vals[0] if len(row_vals) >= 1 else ""
-                b_val = row_vals[1] if len(row_vals) >= 2 else ""
+            for idx, row in enumerate(cgr_data):
+                a_val = row[0] if len(row) >= 1 else ""
+                b_val = row[1] if len(row) >= 2 else ""
+                c_val = row[2] if len(row) >= 3 else ""
+
+                # IMPORTANT: skip rows where column C is not empty
+                if (c_val or "").strip():
+                    continue
 
                 num_digits = digits_only(a_val)
-                numbercgr = ""
-                if num_digits:
-                    numbercgr = num_digits if num_digits.startswith("0") else ("0" + num_digits)
+                if not num_digits:
+                    continue
+
+                numbercgr = num_digits if num_digits.startswith("0") else ("0" + num_digits)
 
                 b_norm = (b_val or "").strip().upper()
                 marked = bool(b_norm) and b_norm not in ("FALSE", "0", "NO")
 
-                cust["numbercgr"] = numbercgr
-                cust["cgr_row"] = row_idx
-                cust["cgr_marked"] = marked
+                free_numbers.append({
+                    "number": numbercgr,
+                    "row": CGR_START_ROW + idx,
+                    "marked": marked
+                })
+
+            # attach numbers to customers
+            for idx, cust in enumerate(pending):
+                if idx < len(free_numbers):
+                    cust["numbercgr"] = free_numbers[idx]["number"]
+                    cust["cgr_row"] = free_numbers[idx]["row"]
+                    cust["cgr_marked"] = free_numbers[idx]["marked"]
+                else:
+                    cust["numbercgr"] = ""
+                    cust["cgr_row"] = None
+                    cust["cgr_marked"] = False
 
     except Exception:
         for cust in pending:

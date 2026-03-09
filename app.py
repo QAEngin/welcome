@@ -21,7 +21,9 @@ app = Flask(
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key")
 APP_USERNAME = os.environ.get("APP_USERNAME")
 APP_PASSWORD = os.environ.get("APP_PASSWORD")
-
+# ====== .ENV ======
+SMS_URL = os.environ.get("SMS_URL")
+SMS_TOKEN = os.environ.get("SMS_TOKEN")
 # ====== CONFIG ======
 SPREADSHEET_ID = "1uwtREvtWENPabibI5FSlhdYokIbBs_kuZmYVeL-BgCQ"
 SHEET_NAME = "SMS"
@@ -354,15 +356,83 @@ def mark_done():
 
     return jsonify({"ok": True, "updated": len(rows)})
 
+@app.route("/send-inforu-mail", methods=["POST"])
+def send_inforu_mail():
+
+    payload = request.get_json(silent=True) or {}
+    dids = payload.get("dids", [])
+
+    if not dids:
+        return jsonify({"ok": False, "message": "No DID provided"}), 400
+
+    # remove duplicates
+    dids = list(dict.fromkeys(dids))
+
+    os.makedirs("did_inforu", exist_ok=True)
+    path = os.path.join("did_inforu", "מספרים לאימות.txt")
+
+    # read existing numbers
+    existing_numbers = set()
+    if os.path.exists(path):
+        with open(path, "r", encoding="utf-8") as f:
+            text = f.read()
+            existing_numbers = set(re.findall(r"\d{9,10}", text))
+
+    # filter only new numbers
+    new_dids = [d for d in dids if d not in existing_numbers]
+
+    if not new_dids:
+        return jsonify({"ok": False, "message": "All numbers already logged"}), 400
+
+    numbers_str = " , ".join(new_dids)
+    date_str = datetime.now().strftime("%d.%m.%Y")
+
+    block = f"""
+=={date_str}==
+אנו חברת נימבוס טלקום בע\"ם מספר ח.פ. 514684125, מאשרים בזאת כי מספרי קו
+{numbers_str} (קוי מרכזיה) בבעלותנו/בבעלות לקוח שלנו והוא אינו מתחזה.
+אשמח לביצוע אימות מספר בבקשה כדי לקדם את תהלים הקמת שירות ללקוחות
+תודה
+
+"""
+
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(block)
+
+    return jsonify({
+        "ok": True,
+        "added": len(new_dids),
+        "numbers": new_dids
+    })
+
+
+# ================================
+# RETURN INFORU LOG TO FRONTEND
+# ================================
+
+@app.route("/inforu-log", methods=["GET"])
+def get_inforu_log():
+
+    path = os.path.join("did_inforu", "מספרים לאימות.txt")
+
+    if not os.path.exists(path):
+        return ""
+
+    with open(path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    return content
+
 
 @app.route("/export", methods=["POST"])
 def export_csv():
+
     data = request.get_json(silent=True)
     if not isinstance(data, list) or not data:
         return jsonify({"ok": False, "message": "No data to export."}), 400
+    
+    
 
-    # Export template:
-    # name=Domain, caller_id_number=DID, did=NumberCGR, template=SMS text
     rows_out = []
     updates = []
 
@@ -385,8 +455,8 @@ def export_csv():
             "caller_id_number": caller_id,
             "did": numbercgr,
             "template": template_txt
-        })
-
+        }
+        )
         # Update חיפ_סמס Column B with Domain (as requested)
         if isinstance(cgr_row, int) and cgr_row >= 1 and domain:
             updates.append({
@@ -404,6 +474,7 @@ def export_csv():
         pass
 
     df = pd.DataFrame(rows_out, columns=["name", "caller_id_number", "did", "template"])
+    df.rename(columns={"did": "number"}, inplace=True)
 
     output = io.BytesIO()
     df.to_csv(output, index=False, encoding="utf-8-sig")
@@ -411,6 +482,92 @@ def export_csv():
 
     return send_file(output, mimetype="text/csv", as_attachment=True, download_name="sms_export.csv")
 
+@app.route("/create-sms", methods=["POST"])
+def create_sms():
+
+    payload = request.get_json(silent=True) or {}
+    customers = payload.get("customers", [])
+
+    if not customers:
+        return jsonify({"ok": False, "message": "No customers selected"}), 400
+
+    results = []
+
+    headers = {
+        "Authorization": SMS_TOKEN,
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+
+    for c in customers:
+
+        domain = (c.get("domain") or "").strip()
+        did = (c.get("did") or "").strip()
+        number = (c.get("numbercgr") or "").strip()
+        template = (c.get("text") or "").strip()
+
+        if not domain:
+            results.append({
+                "domain": "UNKNOWN",
+                "success": False,
+                "response": "Missing Domain"
+            })
+            continue
+
+        api_payload = {
+            "type": "sms",
+            "environment_name": domain,
+            "vml[0][caller_id_number]": did,
+            "vml[0][number]": number,
+            "vml[0][template]": template
+        }
+
+        print("Sending To Voipappz API:", api_payload)
+        print("Token:", SMS_TOKEN)
+
+        try:
+
+            r = requests.post(
+                SMS_URL,
+                headers=headers,
+                data=api_payload,
+                timeout=30
+            )
+
+            try:
+                resp = r.json()
+            except:
+                resp = r.text
+
+            if r.status_code in (200, 201):
+
+                results.append({
+                    "domain": domain,
+                    "success": True,
+                    "response": resp if resp else "Created"
+                })
+
+            else:
+
+                results.append({
+                    "domain": domain,
+                    "success": False,
+                    "response": resp
+                })
+
+        except Exception as e:
+
+            results.append({
+                "domain": domain,
+                "success": False,
+                "response": str(e)
+            })
+
+    return jsonify({
+        "ok": True,
+        "results": results
+    })
+
+    
 
 if __name__ == "__main__":
     app.run(port=5059, debug=True)

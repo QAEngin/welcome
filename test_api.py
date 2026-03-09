@@ -1,42 +1,36 @@
-import os
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+# API URL
+url = "https://cloud.voipappz.io/api/schemas"
 
-SMS_URL = os.getenv("SMSURL")
-SMS_TOKEN = os.getenv("SMSTOKEN")
-
-params = {
-    "TYPE": "SMS",
-    "environment_name": "testdomain",
-    "vml[0][caller_id_number]": "NIRR",
-    "vml[0][number]": "077806661",
-    "vml[0][template]": "TEXT Test"
+# Headers
+headers = {
+    "Authorization": "Basic bmltYnVzLWFwaUBnbWFpbC5jb206SzRaLXJfdw==",
+    "Content-Type": "application/x-www-form-urlencoded"
 }
 
-headers = {
-    "Basic": SMS_TOKEN
+# Payload (same structure as Postman)
+payload = {
+    "type": "sms",
+    "environment_name": "Zuratest1",
+    "vml[0][caller_id_number]": "ZuraSMS",
+    "vml[0][number]": "077888889",
+    "vml[0][template]": "test"
 }
 
 try:
-    print("Sending SMS API request...\n")
-
-    response = requests.post(
-        SMS_URL,
-        headers=headers,
-        data=params,
-        timeout=30
-    )
+    response = requests.post(url, headers=headers, data=payload, timeout=30)
 
     print("Status Code:", response.status_code)
+    print("-------------")
 
+    # try JSON
     try:
-        print("\nResponse JSON:")
+        print("JSON Response:")
         print(response.json())
-    except Exception:
-        print("\nRaw Response:")
+    except:
+        print("Raw Response:")
         print(response.text)
 
 except Exception as e:
-    print("Error:", str(e))
+    print("Request Error:", e)

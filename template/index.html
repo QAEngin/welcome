@@ -1,87 +1,165 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SMS Export Tool</title>
-  <link rel="stylesheet"
-   href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <link rel="stylesheet" href="style.css">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<title>SMS Export Tool</title>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="style.css">
+
 </head>
 
 <body>
+
 <div class="wrap">
 
-  <div class="header">
-    <a href="/logout" class="logout-btn">התנתק</a>
-    <div class="title">
-      <h1>מערכת יצוא SMS</h1>
-      <div class="sub">
-        נטען רק לקוחות עם סטטוס <b>ממתין</b>
-      </div>
-    </div>
+<div class="header">
 
-    <div class="toolbar card">
-      <button class="btn-blue" onclick="loadData()">
-        <span class="dot dot-blue"></span> טען לקוחות ממתין
-      </button>
-      <button class="btn-ghost" onclick="selectAll(true)">סמן הכל</button>
-      <button class="btn-ghost" onclick="selectAll(false)">נקה סימון</button>
-      <button class="btn-green" onclick="markDoneSelected()">
-        <span class="dot dot-green"></span> עדכן סטטוס לבוצע
-      </button>
-      <button class="btn-amber" onclick="exportSelected()">
-        <span class="dot dot-amber"></span> הורד CSV ללקוחות מסומנים
-      </button>
-      <button class="btn-blue" onclick="fireberryFillAll()">
-        <span class="dot dot-blue"></span> משוך Fireberry לכל הלקוחות
-      </button>
-      <input id="searchBox" class="search" type="text"
-        placeholder="חיפוש: שם / Domain / DID"
-        oninput="setSearch(this.value)" />
-    </div>
-  </div>
+<a href="/logout" class="logout-btn">התנתק</a>
 
-  <div class="card">
-    <div class="statusline">
-      <div class="pill" id="countPill">
-        <span class="dot dot-amber"></span>
-        נטענו: 0
-      </div>
-      <div class="pill" id="selectedPill">
+<div class="title">
+<h1>מערכת יצוא SMS</h1>
+<div class="sub">
+נטען רק לקוחות עם סטטוס <b>ממתין</b>
+</div>
+</div>
+
+<div class="toolbar card">
+
+    <button class="btn-blue" onclick="loadData()">
         <span class="dot dot-blue"></span>
-        מסומנים: 0
-      </div>
-    </div>
+        Start Load
+        </button>
+        
+        <button class="btn-blue" onclick="fireberryFillAll()">
+        <span class="dot dot-blue"></span>
+        Fireberry Sync
+        </button>
+        
+        <button class="btn-green" onclick="createSMS()">
+        <span class="dot dot-green"></span> Create SMS
+        </button>
+        
+        <button class="btn-green" onclick="markDoneSelected()">
+        <span class="dot dot-green"></span>
+        Status לבוצע🟢
+        </button>
+        
+        <button class="btn-amber" onclick="exportSelected()">
+        <span class="dot dot-amber"></span>
+        CSV Download
+        </button>
+        
+        <button class="btn-ghost" onclick="selectAll(true)">
+        סמן הכל
+        </button>
+        
+        <button class="btn-ghost" onclick="selectAll(false)">
+        נקה סימון
+        </button>
+        
+        <button class="btn-ghost" onclick="openInforuLog()">
+        <span class="dot dot-blue"></span>
+        Open Inforu Log
+        </button>
+        
+        <button class="btn-blue" onclick="sendInforuMail()">
+        <span class="dot dot-blue"></span>
+        Inforu Mail
+        </button>
 
-    <table id="dataTable">
-        <thead>
-            <tr>
-              <th style="width:70px;">סימון</th>
-              <th style="width:210px;">שם לקוח</th>
-              <th>טקסט SMS</th>
-              <th style="width:120px;">Domain</th>
-              <th style="width:140px;">DID</th>
-              <th style="width:160px;">NumberCGR</th>
-              <th style="width:120px;">סטטוס</th>
-              <th style="width:90px;"># Row</th>
-            </tr>
-          </thead>
-      <tbody></tbody>
-    </table>
+<input
+id="searchBox"
+class="search"
+type="text"
+placeholder="חיפוש: שם / Domain / DID"
+oninput="setSearch(this.value)"
+/>
 
-    <div class="hint">
-        <br/>
-      טיפ: הזן Domain/DID בכל שורה, סמן לקוחות עם ✅, ואז:
-      <b>עדכן סטטוס לבוצע</b>.
-      <br/>
-      כפתור Fireberry מתחת לשם הלקוח מושך Domain/DID אוטומטית לפי ח.פ NumberCGRT סטטוס 🟧 יש להוסיף למערכת קודם
-    </div>
-  </div>
+</div>
+</div>
+
+<div class="card">
+
+<div class="statusline">
+
+<div class="pill" id="countPill">
+<span class="dot dot-amber"></span>
+נטענו: 0
+</div>
+
+<div class="pill" id="selectedPill">
+<span class="dot dot-blue"></span>
+מסומנים: 0
+</div>
+
+</div>
+
+<!-- Inforu log viewer -->
+
+<div class="card" id="inforuLogCard" style="display:none">
+
+<div class="log-header">
+
+<b>Inforu DID Log</b>
+
+<button class="copy-btn" onclick="copyInforuLog()">
+<i class="fa-solid fa-copy"></i>
+</button>
+
+</div>
+
+<pre id="inforuLogText"></pre>
+
+</div>
+
+<table id="dataTable">
+
+<thead>
+
+<tr>
+
+<th style="width:70px;">סימון</th>
+<th style="width:210px;">שם לקוח</th>
+<th>טקסט SMS</th>
+<th style="width:120px;">Domain</th>
+<th style="width:140px;">DID</th>
+<th style="width:160px;">NumberCGR</th>
+<th style="width:120px;">סטטוס</th>
+<th style="width:90px;"># Row</th>
+
+</tr>
+
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+<div class="hint">
+
+<br/>
+
+טיפ: הזן Domain/DID בכל שורה, סמן לקוחות עם ✅, ואז:
+<b>עדכן סטטוס לבוצע</b>.
+
+<br/>
+
+כפתור Fireberry מתחת לשם הלקוח מושך Domain/DID אוטומטית לפי ח.פ  
+NumberCGRT סטטוס 🟧 יש להוסיף למערכת קודם
+
+</div>
+
+</div>
 
 </div>
 
 <script src="/script.js"></script>
+
 </body>
 </html>

@@ -104,9 +104,9 @@ function renderTable(){
       </td>
 
       <td class="right">
-        <input class="input" placeholder="031234567"
-          value="${escapeHtml(item.did)}"
-          oninput="updateField(${idx}, 'did', this.value)" />
+       <input class="input ${item.inforu_sent ? 'did-sent' : ''}" placeholder="031234567"
+         value="${escapeHtml(item.did)}"
+         oninput="updateField(${idx}, 'did', this.value)" />
       </td>
 
       <td class="right">
@@ -409,3 +409,157 @@ async function fireberryFillAll(){
 
   alert(`סיום משיכה מ-Fireberry:\n✅ עודכנו: ${okCount}\n❌ לא נמצאו/אין ח.פ: ${notFoundCount}\n⚠ שגיאות: ${errorCount}`);
 }
+
+/* ================================
+   INFORU MAIL
+================================ */
+
+async function sendInforuMail(){
+
+  const selected = loadedData.filter(x => x.checked);
+
+  if(selected.length === 0){
+    alert("לא נבחרו לקוחות");
+    return;
+  }
+
+  let dids = selected
+    .map(x => (x.did || "").trim())
+    .filter(x => x !== "");
+
+  if(dids.length === 0){
+    alert("יש לייבא DID מ-Fireberry לפני שליחה");
+    return;
+  }
+
+  // remove duplicates
+  dids = [...new Set(dids)];
+
+  try{
+
+    const res = await fetch("/send-inforu-mail",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({dids})
+    });
+
+    const json = await res.json();
+
+    if(!json.ok){
+      alert(json.message);
+      return;
+    }
+
+    // mark sent
+    selected.forEach(row=>{
+      row.inforu_sent = true;
+    });
+
+    renderTable();
+
+    alert("נוצר קובץ אימות Inforu");
+
+  }catch(e){
+    alert("שגיאה בשליחה: " + e);
+  }
+
+}
+
+/* ================================
+   OPEN INFORU LOG
+================================ */
+
+async function openInforuLog(){
+
+  try{
+
+    const res = await fetch("/inforu-log");
+    const text = await res.text();
+
+    document.getElementById("inforuLogText").textContent = text;
+    document.getElementById("inforuLogCard").style.display = "block";
+
+  }catch(e){
+    alert("שגיאה בטעינת הלוג");
+  }
+
+}
+
+
+/* ================================
+   COPY LOG
+================================ */
+
+function copyInforuLog(){
+
+  const text = document.getElementById("inforuLogText").textContent;
+
+  navigator.clipboard.writeText(text);
+
+  alert("הטקסט הועתק");
+
+}
+/* ================================
+   CREATE SMS
+================================ */
+async function createSMS(){
+
+    const selected = loadedData.filter(x => x.checked);
+  
+    if(selected.length === 0){
+      alert("לא נבחרו לקוחות");
+      return;
+    }
+  
+    const customers = selected.map(x => ({
+      domain: (x.domain || "").trim(),
+      did: (x.did || "").trim(),
+      numbercgr: (x.numbercgr || "").trim(),
+      text: x.text || ""
+    }));
+  
+    try{
+  
+      const res = await fetch("/create-sms",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({customers})
+      });
+  
+      const json = await res.json();
+  
+      if(!json.ok){
+        alert("API Error");
+        return;
+      }
+  
+      let successMsg = "";
+      let errorMsg = "";
+  
+      json.results.forEach(r => {
+  
+        if(r.success){
+          successMsg += `✅ ${r.domain} Created\n`;
+        }else{
+          errorMsg += `❌ ${r.domain}\n${JSON.stringify(r.response)}\n\n`;
+        }
+  
+      });
+  
+      if(successMsg){
+        alert(successMsg);
+      }
+  
+      if(errorMsg){
+        alert(errorMsg);
+      }
+  
+    }catch(e){
+  
+      alert("Connection error: " + e);
+  
+    }
+  
+  }

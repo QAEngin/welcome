@@ -68,7 +68,12 @@ display:flex;
 flex-wrap:wrap;
 gap:10px;
 align-items:center;
-justify-content:flex-end;
+justify-content:flex-start;
+max-width:100%;
+}
+
+.toolbar button{
+flex-shrink:0;
 }
 
 /* buttons */
@@ -278,13 +283,26 @@ background:#dc2626;
 
 @media (max-width:900px){
 
-.header{
-flex-direction:column;
-}
+    .header{
+        display:flex;
+        flex-direction:column;
+        gap:14px;
+        margin-bottom:16px;
+        position:sticky;
+        top:0;
+        z-index:1000;
+        background:var(--bg);
+        padding-bottom:10px;
+        }
 
-.toolbar{
-justify-content:center;
-}
+        .toolbar{
+            display:flex;
+            flex-wrap:wrap;
+            gap:10px;
+            align-items:center;
+            justify-content:flex-start;
+            width:100%;
+            }
 
 .search{
 width:100%;
@@ -337,4 +355,44 @@ background:#fffbeb;
 box-shadow:
 inset 2px 2px 5px rgba(0,0,0,0.05),
 inset -2px -2px 5px rgba(255,255,255,0.8);
+}
+/* Inforu Log */
+
+#inforuLogCard{
+  margin-top:20px;
+}
+
+#inforuLogText{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  padding:14px;
+  border-radius:12px;
+  max-height:350px;
+  overflow:auto;
+  font-family:monospace;
+}
+
+.log-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.copy-btn{
+  border:1px solid var(--line);
+  background:white;
+  padding:6px 10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.copy-btn:hover{
+  background:#f1f5f9;
+}
+
+/* DID already sent */
+
+.did-sent{
+  background:#CFFAFE;
 }

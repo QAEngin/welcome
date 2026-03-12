@@ -16,6 +16,9 @@ credentials.json
 log/
 *.log
 
+# Runtime folders
+did_inforu/
+
 # OS
 .DS_Store
 Thumbs.db

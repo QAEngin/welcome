@@ -1,36 +1,47 @@
+import os
 import requests
+from dotenv import load_dotenv
 
-# API URL
-url = "https://cloud.voipappz.io/api/schemas"
+# Load .env
+load_dotenv()
 
-# Headers
-headers = {
-    "Authorization": "Basic bmltYnVzLWFwaUBnbWFpbC5jb206SzRaLXJfdw==",
-    "Content-Type": "application/x-www-form-urlencoded"
-}
+# Webhook from .env
+TOKEN_INFORU = os.getenv("TOKEN_INFORU")
 
-# Payload (same structure as Postman)
+# Test numbers (you can add more later)
+dids = [
+    "0778066666"
+]
+
+# Build payload exactly like app.py
 payload = {
-    "type": "sms",
-    "environment_name": "Zuratest1",
-    "vml[0][caller_id_number]": "ZuraSMS",
-    "vml[0][number]": "077888889",
-    "vml[0][template]": "test"
+    "dids": dids,
+    "numbers": ", ".join(dids),
+    "count": len(dids)
 }
+
+print("\n==== TEST WEBHOOK ====")
+print("Webhook URL:", TOKEN_INFORU)
+print("Numbers being sent:", dids)
+print("Payload:", payload)
+print("======================\n")
 
 try:
-    response = requests.post(url, headers=headers, data=payload, timeout=30)
+
+    response = requests.post(
+        TOKEN_INFORU,
+        json=payload,
+        timeout=20
+    )
 
     print("Status Code:", response.status_code)
-    print("-------------")
 
-    # try JSON
     try:
-        print("JSON Response:")
+        print("\nResponse JSON:")
         print(response.json())
     except:
-        print("Raw Response:")
+        print("\nRaw Response:")
         print(response.text)
 
 except Exception as e:
-    print("Request Error:", e)
+    print("Error:", str(e))

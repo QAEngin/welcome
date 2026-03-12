@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+<title>Nimbus Dashboard</title>
+
+
+<link rel="stylesheet" href="home.css">
+
+</head>
+
+<body>
+
+    <section class="dashboard">
+
+        <div class="card bot" onclick="location.href='/bot'">
+          <div class="card-header">
+            <span class="category">BOT Queue</span>
+            <div class="dots">•••</div>
+          </div>
+      
+          <div class="card-body">
+            <h3>BOT</h3>
+            <p>שירות מענה בוט</p>
+          </div>
+      
+          <div class="card-footer">
+            <div class="progress-info">
+              <span>Progress</span>
+              <span id="bot-percent">0%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="bot-progress" style="width: 45%;"></div>
+            </div>
+          </div>
+        </div>
+      
+        <div class="card sms" onclick="location.href='/sms'">
+          <div class="card-header">
+            <span class="category">SMS Queue</span>
+            <div class="dots">•••</div>
+          </div>
+      
+          <div class="card-body">
+            <h3>SMS</h3>
+            <p>הודעות SMS</p>
+          </div>
+      
+          <div class="card-footer">
+            <div class="progress-info">
+              <span>Progress</span>
+              <span id="sms-percent">0%</span>
+            </div>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="sms-progress" style="width: 70%;"></div>
+            </div>
+          </div>
+        </div>
+      
+      </section>
+
+<script src="home.js"></script>
+
+</body>
+</html>

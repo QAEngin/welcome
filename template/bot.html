@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+<meta charset="UTF-8">
+<title>BOT Queue</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="bot.css">
+
+</head>
+
+<body>
+
+<div class="top-bar">
+
+    <div class="top-actions">
+
+        <button class="nav-btn" onclick="window.location.href='/home'">
+            🏠 Home
+        </button>
+
+        <button class="nav-btn logout" onclick="window.location.href='/logout'">
+            🔓 התנתק
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="page">
+
+<h2 class="title">שירות מענה - בוט</h2>
+
+<div class="counter">
+לקוחות בהמתנה: <span id="waiting-count">0</span>
+</div>
+
+<input type="text" id="search" placeholder="חיפוש לקוח..." />
+
+<div class="table-card">
+
+<table class="customers-table">
+
+<thead>
+<tr>
+<th>לקוח</th>
+<th>Domain</th>
+<th>DID</th>
+<th>סטטוס</th>
+</tr>
+</thead>
+
+<tbody id="customers-body"></tbody>
+
+</table>
+
+</div>
+
+<div id="empty-message" class="empty" style="display:none">
+אין לקוחות בהמתנה
+</div>
+
+</div>
+
+<script src="bot.js"></script>
+
+</body>
+</html>

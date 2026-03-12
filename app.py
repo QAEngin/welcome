@@ -18,6 +18,7 @@ app = Flask(
     static_folder="template",
     static_url_path=""
 )
+TOKEN_INFORU = os.environ.get("TOKEN_INFORU")
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key")
 APP_USERNAME = os.environ.get("APP_USERNAME")
 APP_PASSWORD = os.environ.get("APP_PASSWORD")
@@ -27,6 +28,8 @@ SMS_TOKEN = os.environ.get("SMS_TOKEN")
 # ====== CONFIG ======
 SPREADSHEET_ID = "1uwtREvtWENPabibI5FSlhdYokIbBs_kuZmYVeL-BgCQ"
 SHEET_NAME = "SMS"
+# Bot sheet
+BOT_SHEET_NAME = "שירות מענה - בוט"
 
 # NumberCGR pool sheet
 CGR_SHEET_NAME = "חיפ_סמס"
@@ -166,6 +169,36 @@ def fireberry_lookup_by_idnumber(idnumber: str) -> dict:
 
     return {"found": True, "domain": domain, "did": did}
 
+#//fireberry_lookup_by_idnumber
+def fireberry_lookup_domain_by_record_id(record_id):
+
+    headers = {"tokenid": FIREBERRY_TOKENID}
+
+    body = {
+        "objecttype": 1,
+        "page_size": 1,
+        "page_number": 1,
+        "fields": "pcfsystemfield179",
+        "query": f"(id = {record_id})"
+    }
+
+    try:
+
+        r = requests.post(FIREBERRY_URL, headers=headers, json=body, timeout=30)
+        r.raise_for_status()
+
+        resp = r.json()
+
+        rows = resp.get("data", {}).get("Data", [])
+
+        if rows:
+            return (rows[0].get("pcfsystemfield179") or "").strip()
+
+    except Exception as e:
+        print("Fireberry BOT lookup error:", e)
+
+    return ""
+
 
 def get_pending_customers():
     """
@@ -260,18 +293,19 @@ def get_pending_customers():
     return pending
 
 
+# ================= ROOT =================
 @app.route("/")
-def index():
-    if not session.get("logged_in"):
-        return redirect(url_for("login"))
-    return render_template("index.html")
-## Login
-@app.route("/login", methods=["GET","POST"])
+def root():
+    return redirect(url_for("login"))
+
+
+# ================= LOGIN =================
+@app.route("/login", methods=["GET", "POST"])
 def login():
 
-    # If already logged in → go to main page
+    # If already logged in → go to home
     if session.get("logged_in"):
-        return redirect(url_for("index"))
+        return redirect(url_for("home"))
 
     if request.method == "POST":
         username = request.form.get("username")
@@ -279,23 +313,55 @@ def login():
 
         if username == APP_USERNAME and password == APP_PASSWORD:
             session["logged_in"] = True
-            return redirect(url_for("index"))
+            return redirect(url_for("home"))
 
-        # Wrong credentials
         return render_template("login.html", error="Invalid username or password")
 
     return render_template("login.html")
-## Logout
+
+
+# ================= HOME =================
+@app.route("/home")
+def home():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    return render_template("home.html")
+
+
+# ================= SMS PAGE =================
+@app.route("/sms")
+def sms_page():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    # SMS page remains your current index.html
+    return render_template("index.html")
+
+
+# ================= BOT PAGE =================
+@app.route("/bot")
+def bot_page():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    return render_template("bot.html")
+
+
+# ================= LOGOUT =================
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("login"))
-
+##Load data
 @app.route("/load-data")
 def load_data():
     return jsonify(get_pending_customers())
 
-
+#Firebarry Sync by ID number
 @app.route("/fireberry-by-id", methods=["POST"])
 def fireberry_by_id():
     payload = request.get_json(silent=True) or {}
@@ -315,6 +381,7 @@ def fireberry_by_id():
 
 @app.route("/mark-done", methods=["POST"])
 def mark_done():
+
     payload = request.get_json(silent=True) or {}
     customers = payload.get("customers", [])
 
@@ -322,12 +389,17 @@ def mark_done():
         return jsonify({"ok": False, "message": "No customers provided."}), 400
 
     rows = []
+    cgr_updates = []
     clean_customers = []
 
     for c in customers:
+
         if not isinstance(c, dict):
             continue
+
         r = c.get("sheet_row")
+        cgr_row = c.get("cgr_row")
+
         if not isinstance(r, int) or r < 2:
             continue
 
@@ -336,12 +408,26 @@ def mark_done():
         did = (c.get("did") or "").strip()
 
         rows.append(r)
-        clean_customers.append({"name": name, "domain": domain, "did": did})
+
+        clean_customers.append({
+            "name": name,
+            "domain": domain,
+            "did": did
+        })
+
+        # CGR sheet update (חיפ_סמס column C)
+        if isinstance(cgr_row, int) and domain:
+            cgr_updates.append({
+                "range": gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_MARK),
+                "values": [[domain]]
+            })
 
     if not rows:
         return jsonify({"ok": False, "message": "No valid rows to update."}), 400
 
     client = get_gspread_client()
+
+    # Update SMS sheet
     ws = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
 
     updates = []
@@ -352,9 +438,18 @@ def mark_done():
         })
 
     ws.batch_update(updates)
+
+    # Update CGR sheet
+    if cgr_updates:
+        cgr_ws = client.open_by_key(SPREADSHEET_ID).worksheet(CGR_SHEET_NAME)
+        cgr_ws.batch_update(cgr_updates)
+
     append_log(clean_customers)
 
-    return jsonify({"ok": True, "updated": len(rows)})
+    return jsonify({
+        "ok": True,
+        "updated": len(rows)
+    })
 
 @app.route("/send-inforu-mail", methods=["POST"])
 def send_inforu_mail():
@@ -389,6 +484,7 @@ def send_inforu_mail():
 
     block = f"""
 =={date_str}==
+שלום רב,
 אנו חברת נימבוס טלקום בע\"ם מספר ח.פ. 514684125, מאשרים בזאת כי מספרי קו
 {numbers_str} (קוי מרכזיה) בבעלותנו/בבעלות לקוח שלנו והוא אינו מתחזה.
 אשמח לביצוע אימות מספר בבקשה כדי לקדם את תהלים הקמת שירות ללקוחות
@@ -398,6 +494,20 @@ def send_inforu_mail():
 
     with open(path, "a", encoding="utf-8") as f:
         f.write(block)
+
+    # SEND TO MAKE WEBHOOK
+    try:
+        requests.post(
+    TOKEN_INFORU,
+    json={
+        "dids": new_dids,
+        "numbers": ", ".join(new_dids),
+        "count": len(new_dids)
+    },
+    timeout=20
+)
+    except Exception as e:
+        print("Make webhook error:", e)
 
     return jsonify({
         "ok": True,
@@ -566,6 +676,76 @@ def create_sms():
         "ok": True,
         "results": results
     })
+
+
+
+def get_bot_customers():
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(BOT_SHEET_NAME)
+
+    data = ws.get_all_values()
+
+    customers = []
+
+    if not data or len(data) < 2:
+        return customers
+
+    rows = data[1:]
+
+    for i, row in enumerate(rows, start=2):
+
+        name = row[0].strip() if len(row) >= 1 else ""
+        client_id = row[1].strip() if len(row) >= 2 else ""
+        did = row[14].strip() if len(row) >= 15 else ""
+        done = row[15].strip().lower() if len(row) >= 16 else ""
+
+        if did and done != "true":
+
+            if not did.startswith("0"):
+                did = "0" + did
+
+            customers.append({
+                "row": i,
+                "name": name,
+                "client_id": client_id,
+                "did": did,
+                "domain": "",
+                "status": "ממתין"
+            })
+
+    return customers
+
+
+@app.route("/bot-data")
+def bot_data():
+
+    customers = get_bot_customers()
+
+    return jsonify({
+        "count": len(customers),
+        "customers": customers
+    })
+
+
+@app.route("/bot-done", methods=["POST"])
+def bot_done():
+
+    payload = request.get_json(silent=True) or {}
+
+    row = payload.get("row")
+
+    if not row:
+        return jsonify({"ok": False})
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(BOT_SHEET_NAME)
+
+    ws.update_cell(row, 16, True)  # column P checkbox
+
+    return jsonify({"ok": True})
+
+#//inforu Email
 
     
 

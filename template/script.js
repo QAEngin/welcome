@@ -213,39 +213,48 @@ function validateNoDuplicatesBeforeExport(selected){
 
 /* Mark done */
 async function markDoneSelected(){
-  const selected = getSelected();
-  if(selected.length === 0){
-    alert("לא נבחרו לקוחות.");
-    return;
-  }
 
-  const customers = selected.map(x => ({
-    sheet_row: x.sheet_row,
-    name: x.name || "",
-    domain: (x.domain || "").trim(),
-    did: (x.did || "").trim()
-  }));
-
-  try{
-    const res = await fetch('/mark-done', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ customers })
-    });
-
-    const json = await res.json();
-    if(!res.ok || !json.ok){
-      alert("שגיאה בעדכון סטטוס: " + (json.message || "Unknown"));
+    const selected = getSelected();
+  
+    if(selected.length === 0){
+      alert("לא נבחרו לקוחות.");
       return;
     }
-
-    alert(`עודכן ל"בוצע": ${json.updated} לקוחות\nנרשם לוג ב: log/created.log`);
-    await loadData();
-
-  }catch(e){
-    alert("שגיאה בעדכון סטטוס: " + e);
+  
+    const customers = selected.map(x => ({
+      sheet_row: x.sheet_row,
+      name: x.name || "",
+      domain: (x.domain || "").trim(),
+      did: (x.did || "").trim(),
+      cgr_row: x.cgr_row   // ✅ THIS IS THE FIX
+    }));
+  
+    try{
+  
+      const res = await fetch('/mark-done', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ customers })
+      });
+  
+      const json = await res.json();
+  
+      if(!res.ok || !json.ok){
+        alert("שגיאה בעדכון סטטוס: " + (json.message || "Unknown"));
+        return;
+      }
+  
+      alert(`עודכן ל"בוצע": ${json.updated} לקוחות\nנרשם לוג ב: log/created.log`);
+  
+      await loadData();
+  
+    }catch(e){
+  
+      alert("שגיאה בעדכון סטטוס: " + e);
+  
+    }
+  
   }
-}
 
 /* Export CSV */
 async function exportSelected(){
@@ -416,54 +425,54 @@ async function fireberryFillAll(){
 
 async function sendInforuMail(){
 
-  const selected = loadedData.filter(x => x.checked);
-
-  if(selected.length === 0){
-    alert("לא נבחרו לקוחות");
-    return;
-  }
-
-  let dids = selected
-    .map(x => (x.did || "").trim())
-    .filter(x => x !== "");
-
-  if(dids.length === 0){
-    alert("יש לייבא DID מ-Fireberry לפני שליחה");
-    return;
-  }
-
-  // remove duplicates
-  dids = [...new Set(dids)];
-
-  try{
-
-    const res = await fetch("/send-inforu-mail",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body:JSON.stringify({dids})
-    });
-
-    const json = await res.json();
-
-    if(!json.ok){
-      alert(json.message);
+    const selected = loadedData.filter(x => x.checked);
+  
+    if(selected.length === 0){
+      alert("לא נבחרו לקוחות");
       return;
     }
-
-    // mark sent
-    selected.forEach(row=>{
-      row.inforu_sent = true;
-    });
-
-    renderTable();
-
-    alert("נוצר קובץ אימות Inforu");
-
-  }catch(e){
-    alert("שגיאה בשליחה: " + e);
+  
+    let dids = selected
+      .map(x => (x.did || "").trim())
+      .filter(x => x !== "");
+  
+    if(dids.length === 0){
+      alert("יש לייבא DID מ-Fireberry לפני שליחה");
+      return;
+    }
+  
+    // remove duplicates
+    dids = [...new Set(dids)];
+  
+    try{
+  
+      const res = await fetch("/send-inforu-mail",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({dids})
+      });
+  
+      const json = await res.json();
+  
+      if(!json.ok){
+        alert(json.message);
+        return;
+      }
+  
+      // mark sent
+      selected.forEach(row=>{
+        row.inforu_sent = true;
+      });
+  
+      renderTable();
+  
+      alert("נשלח אימות Inforu");
+  
+    }catch(e){
+      alert("שגיאה בשליחה: " + e);
+    }
+  
   }
-
-}
 
 /* ================================
    OPEN INFORU LOG
@@ -471,20 +480,38 @@ async function sendInforuMail(){
 
 async function openInforuLog(){
 
-  try{
-
-    const res = await fetch("/inforu-log");
-    const text = await res.text();
-
-    document.getElementById("inforuLogText").textContent = text;
-    document.getElementById("inforuLogCard").style.display = "block";
-
-  }catch(e){
-    alert("שגיאה בטעינת הלוג");
+    try{
+  
+      const res = await fetch("/inforu-log");
+      const text = await res.text();
+  
+      const logText = document.getElementById("inforuLogText");
+      const logCard = document.getElementById("inforuLogCard");
+  
+      logText.textContent = text;
+      logText.style.display = "block";
+      logCard.style.display = "block";
+  
+    }catch(e){
+      alert("שגיאה בטעינת הלוג");
+    }
+  
   }
+// Close log
+function closeInforuLog(){
 
-}
-
+    const logText = document.getElementById("inforuLogText");
+    const logCard = document.getElementById("inforuLogCard");
+  
+    if(logText){
+      logText.style.display = "none";
+    }
+  
+    if(logCard){
+      logCard.style.display = "none";
+    }
+  
+  }
 
 /* ================================
    COPY LOG

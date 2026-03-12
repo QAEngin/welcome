@@ -11,16 +11,19 @@
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <link rel="stylesheet" href="style.css">
-
 </head>
 
 <body>
 
 <div class="wrap">
 
+<!-- HEADER -->
 <div class="header">
 
-<a href="/logout" class="logout-btn">התנתק</a>
+<div class="top-actions">
+<a href="/home" class="btn-blue nav-btn">🏠 Home</a>
+<a href="/logout" class="btn-blue nav-btn logout">🔓 התנתק</a>
+</div>
 
 <div class="title">
 <h1>מערכת יצוא SMS</h1>
@@ -31,47 +34,48 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 
 <div class="toolbar card">
 
-    <button class="btn-blue" onclick="loadData()">
-        <span class="dot dot-blue"></span>
-        Start Load
-        </button>
-        
-        <button class="btn-blue" onclick="fireberryFillAll()">
-        <span class="dot dot-blue"></span>
-        Fireberry Sync
-        </button>
-        
-        <button class="btn-green" onclick="createSMS()">
-        <span class="dot dot-green"></span> Create SMS
-        </button>
-        
-        <button class="btn-green" onclick="markDoneSelected()">
-        <span class="dot dot-green"></span>
-        Status לבוצע🟢
-        </button>
-        
-        <button class="btn-amber" onclick="exportSelected()">
-        <span class="dot dot-amber"></span>
-        CSV Download
-        </button>
-        
-        <button class="btn-ghost" onclick="selectAll(true)">
-        סמן הכל
-        </button>
-        
-        <button class="btn-ghost" onclick="selectAll(false)">
-        נקה סימון
-        </button>
-        
-        <button class="btn-ghost" onclick="openInforuLog()">
-        <span class="dot dot-blue"></span>
-        Open Inforu Log
-        </button>
-        
-        <button class="btn-blue" onclick="sendInforuMail()">
-        <span class="dot dot-blue"></span>
-        Inforu Mail
-        </button>
+<button class="btn-blue" onclick="loadData()">
+<span class="dot dot-blue"></span>
+Start Load➰
+</button>
+
+<button class="btn-blue" onclick="fireberryFillAll()">
+<span class="dot dot-blue"></span>
+Fireberry Sync🔄
+</button>
+
+<button class="btn-green" onclick="createSMS()">
+<span class="dot dot-green"></span>
+Create SMS💠
+</button>
+
+<button class="btn-green" onclick="markDoneSelected()">
+<span class="dot dot-green"></span>
+Status לבוצע🟢
+</button>
+
+<button class="btn-amber" onclick="exportSelected()">
+<span class="dot dot-amber"></span>
+CSV Download📜
+</button>
+
+<button class="btn-ghost" onclick="selectAll(true)">
+סמן הכל✔️
+</button>
+
+<button class="btn-ghost" onclick="selectAll(false)">
+נקה סימון➖
+</button>
+
+<button class="btn-ghost" onclick="openInforuLog()">
+<span class="dot dot-blue"></span>
+Open Inforu Log📃
+</button>
+
+<button class="btn-blue" onclick="sendInforuMail()">
+<span class="dot dot-blue"></span>
+Inforu Mail📧
+</button>
 
 <input
 id="searchBox"
@@ -84,6 +88,7 @@ oninput="setSearch(this.value)"
 </div>
 </div>
 
+<!-- MAIN CARD -->
 <div class="card">
 
 <div class="statusline">
@@ -101,29 +106,33 @@ oninput="setSearch(this.value)"
 </div>
 
 <!-- Inforu log viewer -->
-
 <div class="card" id="inforuLogCard" style="display:none">
 
 <div class="log-header">
 
-<b>Inforu DID Log</b>
+<div class="log-tools">
+<button class="copy-btn" onclick="closeInforuLog()" title="Close Log">✖</button>
 
-<button class="copy-btn" onclick="copyInforuLog()">
+<button class="copy-btn" onclick="copyInforuLog()" title="Copy Log">
 <i class="fa-solid fa-copy"></i>
 </button>
+</div>
+
+<b>Inforu DID Log</b>
 
 </div>
 
-<pre id="inforuLogText"></pre>
+<pre id="inforuLogText" style="display:none;"></pre>
 
 </div>
 
+</div>
+
+<!-- TABLE -->
 <table id="dataTable">
 
 <thead>
-
 <tr>
-
 <th style="width:70px;">סימון</th>
 <th style="width:210px;">שם לקוח</th>
 <th>טקסט SMS</th>
@@ -132,15 +141,14 @@ oninput="setSearch(this.value)"
 <th style="width:160px;">NumberCGR</th>
 <th style="width:120px;">סטטוס</th>
 <th style="width:90px;"># Row</th>
-
 </tr>
-
 </thead>
 
 <tbody></tbody>
 
 </table>
 
+<!-- HINT -->
 <div class="hint">
 
 <br/>
@@ -152,8 +160,6 @@ oninput="setSearch(this.value)"
 
 כפתור Fireberry מתחת לשם הלקוח מושך Domain/DID אוטומטית לפי ח.פ  
 NumberCGRT סטטוס 🟧 יש להוסיף למערכת קודם
-
-</div>
 
 </div>
 

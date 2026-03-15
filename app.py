@@ -456,6 +456,8 @@ def send_inforu_mail():
 
     payload = request.get_json(silent=True) or {}
     dids = payload.get("dids", [])
+    # normalize numbers
+    dids = [re.sub(r"\D", "", d) for d in dids]
 
     if not dids:
         return jsonify({"ok": False, "message": "No DID provided"}), 400
@@ -471,7 +473,7 @@ def send_inforu_mail():
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             text = f.read()
-            existing_numbers = set(re.findall(r"\d{9,10}", text))
+            existing_numbers = set(re.findall(r"0\d{8,9}", text))
 
     # filter only new numbers
     new_dids = [d for d in dids if d not in existing_numbers]
@@ -500,7 +502,7 @@ def send_inforu_mail():
         requests.post(
     TOKEN_INFORU,
     json={
-        "dids": new_dids,
+        "body": numbers_str,
         "numbers": ", ".join(new_dids),
         "count": len(new_dids)
     },
@@ -554,7 +556,7 @@ def export_csv():
         caller_id = (r.get("DID") or "").strip()
         numbercgr = (r.get("NumberCGR") or "").strip()
         template_txt = (r.get("Text") or "").strip()
-        cgr_row = r.get("cgr_row")
+        cgr_row = int(r.get("cgr_row") or 0)
 
         num_digits = digits_only(numbercgr)
         if num_digits:
@@ -580,8 +582,9 @@ def export_csv():
             client = get_gspread_client()
             cgr_ws = client.open_by_key(SPREADSHEET_ID).worksheet(CGR_SHEET_NAME)
             cgr_ws.batch_update(updates)
-    except Exception:
-        pass
+    except Exception as e:
+        print ("CGR UPDATE ERROR:", e)
+        print("CGR sheet updated successfully")
 
     df = pd.DataFrame(rows_out, columns=["name", "caller_id_number", "did", "template"])
     df.rename(columns={"did": "number"}, inplace=True)
@@ -745,7 +748,10 @@ def bot_done():
 
     return jsonify({"ok": True})
 
-#//inforu Email
+#//Dashboard Page
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
 
     
 

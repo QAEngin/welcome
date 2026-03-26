@@ -1,138 +1,108 @@
 body{
-    background: linear-gradient(135deg,#0f172a,#111827);
-    font-family: Segoe UI,Tahoma;
-    margin:0;
-    color:white;
-    }
-    
-    /* TOP BAR */
-    
-    .top-bar{
-    display:flex;
-    justify-content:flex-end;
-    padding:20px 40px;
-    }
-    
-    .top-actions{
-    display:flex;
-    gap:10px;
-    }
-    
-    .nav-btn{
-    background:#1f2937;
-    color:white;
-    border:none;
-    padding:8px 16px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:14px;
-    transition:0.2s;
-    }
-    
-    .nav-btn:hover{
-    background:#374151;
-    }
-    
-    .nav-btn.logout{
-    background:#b91c1c;
-    }
-    
-    .nav-btn.logout:hover{
-    background:#ef4444;
-    }
-    
-    /* PAGE */
-    
-    .page{
-    max-width:900px;
-    margin:auto;
-    padding:20px;
-    }
-    
-    .title{
-    text-align:center;
-    margin-bottom:30px;
-    font-size:26px;
-    }
-    
-    .counter{
-    font-size:18px;
-    margin-bottom:20px;
-    text-align:center;
-    }
-    
-    /* SEARCH */
-    
-    #search{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:none;
-    margin-bottom:20px;
-    font-size:15px;
-    }
-    
-    /* TABLE CARD */
-    
-    .table-card{
-    background:rgba(255,255,255,0.03);
-    border-radius:12px;
-    padding:10px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.4);
-    }
-    
-    /* TABLE */
-    
-    .customers-table{
-    width:100%;
-    border-collapse:collapse;
-    }
-    
-    .customers-table th{
-    padding:14px;
-    font-size:14px;
-    color:#cbd5f5;
-    border-bottom:1px solid rgba(255,255,255,0.1);
-    }
-    
-    .customers-table td{
-    padding:14px;
-    border-bottom:1px solid rgba(255,255,255,0.05);
-    }
-    
-    /* ROW HOVER */
-    
-    .customers-table tbody tr:hover{
-    background:rgba(255,255,255,0.05);
-    transition:0.2s;
-    }
-    
-    /* STATUS BUTTON */
-    
-    .status-btn{
-    padding:6px 16px;
-    border:none;
-    border-radius:20px;
-    cursor:pointer;
-    font-weight:600;
-    font-size:13px;
-    }
-    
-    .status-btn.waiting{
-    background:#f59e0b;
-    color:#111827;
-    }
-    
-    .status-btn.done{
-    background:#22c55e;
-    color:white;
-    }
-    
-    /* EMPTY MESSAGE */
-    
-    .empty{
-    text-align:center;
-    margin-top:40px;
-    opacity:0.7;
-    font-size:18px;
-    }
+  background: #e7e3da;
+  font-family: "Poppins", "Segoe UI", Tahoma, sans-serif;
+  margin:0;
+  color:#2d322f;
+}
+
+.page{
+  max-width:980px;
+  margin:auto;
+  padding:20px;
+  background:linear-gradient(135deg,#ece8de 0%, #f3f0e8 100%);
+  border-radius:24px;
+  border:1px solid #d9d4c8;
+  box-shadow:0 18px 36px rgba(70,63,52,0.12);
+}
+
+.title{
+  text-align:center;
+  margin:6px 0 16px;
+  font-size:34px;
+  color:#2a332e;
+}
+
+.counter{
+  font-size:18px;
+  margin-bottom:16px;
+  text-align:center;
+  color:#49524d;
+}
+
+#search{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #d3cec3;
+  margin-bottom:16px;
+  font-size:15px;
+  background:#fff;
+}
+
+.table-card{
+  background:#f7f5ef;
+  border-radius:14px;
+  padding:10px;
+  border:1px solid #d4d0c5;
+  box-shadow:0 10px 24px rgba(40,40,40,0.08);
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+
+.table-card:hover{
+  border-color:#46c68a;
+  box-shadow:0 0 0 2px rgba(70,198,138,.2),0 10px 24px rgba(40,40,40,0.08);
+}
+
+.customers-table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.customers-table th{
+  padding:14px;
+  font-size:14px;
+  color:#3d4440;
+  border-bottom:1px solid #ddd7ca;
+}
+
+.customers-table td{
+  padding:14px;
+  border-bottom:1px solid #ebe6dc;
+}
+
+.customers-table tbody tr:hover{
+  background:#fcfbf8;
+  transition:0.2s;
+}
+
+.status-btn{
+  padding:7px 16px;
+  border:none;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:600;
+  font-size:13px;
+}
+
+.status-btn.waiting{
+  background:#f2c84b;
+  color:#443710;
+}
+
+.status-btn.done{
+  background:#2f9869;
+  color:#fff;
+}
+
+.empty{
+  text-align:center;
+  margin-top:26px;
+  opacity:0.75;
+  font-size:18px;
+}
+
+@media (max-width:980px){
+  .title{
+    font-size:28px;
+  }
+}

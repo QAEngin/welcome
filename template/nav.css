@@ -1,0 +1,241 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+
+:root {
+  --nav-bg: #8f8679;
+  --nav-bg-2: #958b7f;
+  --nav-text: #f0ece4;
+  --nav-muted: #d6cec2;
+  --nav-active: #799482;
+  --nav-border: rgba(255, 255, 255, 0.16);
+}
+
+body.has-side-nav {
+  padding-left: 252px;
+}
+
+.site-nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 251px;
+  z-index: 1300;
+  background: linear-gradient(180deg, var(--nav-bg) 0%, var(--nav-bg-2) 100%);
+  border-right: 1px solid var(--nav-border);
+}
+
+.site-nav-inner {
+  height: 100%;
+  padding: 18px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  justify-content: flex-start;
+  color: #2b2f2c;
+  font: 16px Poppins, sans-serif;
+  box-sizing: border-box;
+}
+
+.brand {
+  text-decoration: none;
+  display: block;
+  margin: 2px 8px 14px;
+  text-align: center;
+}
+
+.brand-kicker {
+  display: block;
+  color: var(--nav-muted);
+  font-size: 11px;
+}
+
+.brand-main {
+  display: block;
+  color: var(--nav-text);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nav-toggle {
+  display: none;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: var(--nav-text);
+  font-size: 17px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #8b8377;
+  font-size: 12px;
+}
+
+.nav-label {
+  line-height: 1;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.nav-link.active {
+  background: var(--nav-active);
+  border-color: #6baa86;
+}
+
+.nav-footer {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 12px 8px 0;
+  text-align: center;
+  display: block;
+  flex-shrink: 0;
+}
+
+.nav-user {
+  color: var(--nav-text);
+  font-size: 15px;
+  margin: 0 0 8px;
+  line-height: 23px;
+}
+
+.nav-user small {
+  display: block;
+  color: var(--nav-muted);
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.nav-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--nav-text);
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 980px) {
+  body.has-side-nav {
+    padding-left: 0;
+    padding-top: 62px;
+  }
+
+  .site-nav {
+    right: 0;
+    left: 0;
+    bottom: auto;
+    width: auto;
+    height: 62px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: linear-gradient(90deg, #2a3431 0%, #222d29 100%);
+  }
+
+  .site-nav-inner {
+    height: 62px;
+    padding: 0 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    margin: 0;
+  }
+
+  .brand-kicker {
+    display: none;
+  }
+
+  .brand-main {
+    font-size: 22px;
+    color: #f2ede5;
+  }
+
+  .nav-toggle {
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    color: #fff;
+    background: transparent;
+    border-radius: 10px;
+    padding: 7px 11px;
+    font-size: 14px;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 70px;
+    left: 12px;
+    width: min(300px, calc(100vw - 24px));
+    display: none;
+    background: #8f8679;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .nav-links {
+    gap: 6px;
+  }
+
+  .site-nav.open .nav-links {
+    display: grid;
+  }
+
+  .nav-link {
+    font-size: 17px;
+    padding: 9px 10px;
+  }
+
+  .nav-footer {
+    display: block;
+    position: fixed;
+    left: 12px;
+    width: min(300px, calc(100vw - 24px));
+    bottom: 10px;
+    background: #8f8679;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+  }
+
+  .site-nav:not(.open) .nav-footer {
+    display: none;
+  }
+}

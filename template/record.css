@@ -1,77 +1,158 @@
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-    padding: 20px;
+  font-family: "Poppins", "Segoe UI", Tahoma, sans-serif;
+  background: #e7e3da;
+  margin: 0;
+  color: #2e332f;
+}
+
+.record-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #ece8de 0%, #f3f0e8 100%);
+  border-radius: 24px;
+  border: 1px solid #d9d4c8;
+  box-shadow: 0 18px 36px rgba(70, 63, 52, 0.12);
 }
 
 h2 {
-    margin-bottom: 14px;
+  margin: 6px 0 14px;
+  font-size: 34px;
 }
 
 table {
-    border-collapse: collapse;
-    width: 100%;
-    background: white;
+  border-collapse: collapse;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #d8d2c5;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+table:hover {
+  border-color:#46c68a;
+  box-shadow:0 0 0 2px rgba(70,198,138,.2);
 }
 
 th, td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-    text-align: left;
-    vertical-align: middle;
+  padding: 10px;
+  border-bottom: 1px solid #ece7dc;
+  text-align: left;
+  vertical-align: middle;
 }
 
 th {
-    background: #007bff;
-    color: white;
+  background: #d6d1c6;
+  color: #2f3632;
+  font-weight: 700;
+}
+
+#table th:nth-child(5),
+#table td.status-cell {
+  text-align: center;
 }
 
 a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 700;
 }
 
 .load-btn {
-    padding: 10px 14px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    background: #007bff;
-    color: #fff;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background: #2f9869;
+  color: #fff;
+  font-weight: 600;
+}
+
+.load-btn:hover {
+  background: #257c56;
 }
 
 .actions-cell {
-    white-space: nowrap;
-    width: 160px;
+  white-space: nowrap;
+  width: 160px;
 }
 
 .status-cell {
-    width: 140px;
-    text-align: center;
+  width: 140px;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .actions-cell a {
-    display: inline-block;
+  display: inline-block;
 }
 
 .done-btn {
-    padding: 7px 12px;
-    cursor: pointer;
-    border: none;
-    border-radius: 6px;
-    background: #2e7d32;
-    color: #fff;
-    transform: translateX(-6px);
+  padding: 7px 12px;
+  display: inline-block;
+  cursor: pointer;
+  border: none;
+  border-radius: 7px;
+  background: #2f9869;
+  color: #fff;
 }
 
 .done-btn:hover {
-    background: #b9f6ca;
-    color: #1b5e20;
+  background: #257c56;
 }
 
 .done-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-card {
+  background: #fff;
+  border-radius: 14px;
+  width: min(92vw, 380px);
+  padding: 18px;
+  border: 1px solid #d9d4c7;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-card h3 {
+  margin: 0 0 8px;
+}
+
+.confirm-card p {
+  margin: 0 0 14px;
+  color: #555;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: #2f9869;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-btn.ghost {
+  background: #ece7db;
+  color: #333;
 }

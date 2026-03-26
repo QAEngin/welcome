@@ -1,125 +1,151 @@
 body {
-    background: #151921;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    min-height: 100vh;
-
-    display: grid;
-    place-items: center;
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #bcb3a5 0%, #cfc6b9 100%);
+  color: #f4f0e9;
 }
 
-/* DASHBOARD */
-
-.dashboard {
-
-    direction: ltr; /* prevents RTL layout issues */
-
-    display: grid;
-
-    grid-template-columns: 340px 340px;
-
-    gap: 30px;
+.dashboard-wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 18px 20px 30px;
+  display: flex;
+  justify-content: center;
 }
 
-/* CARD BASE */
-.card {
-    width: 340px;
-    height: 320px; /* Taller to match the goal image */
-    background: #111; /* Fallback */
-    border-radius: 40px; /* Very rounded corners */
-    padding: 35px;
-    color: white;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-    position: relative;
-    flex-shrink:0;
+.dashboard-panel {
+  background: linear-gradient(135deg, #ab9f90 0%, #b9ae9f 100%);
+  border-radius: 24px;
+  padding: 18px 16px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: 0 18px 36px rgba(70, 63, 52, 0.2);
 }
 
-.card:hover {
-    transform: translateY(-15px);
+.dash-head .welcome {
+  margin: 8px 0 4px;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-/* GRADIENTS (Radial for the "Glow" look) */
-.bot {
-    background: radial-gradient(circle at top right, rgba(243, 156, 18, 0.4), #111 70%);
+.dash-head h1 {
+  margin: 0 0 16px;
+  font-size: 52px;
+  font-weight: 700;
 }
 
-.sms {
-    background: radial-gradient(circle at top right, rgba(26, 188, 156, 0.4), #111 70%);
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
 }
 
-.record {
-    background: radial-gradient(circle at top right, rgba(52, 152, 219, 0.4), #111 70%);
+.service-card {
+  background: rgba(89, 78, 63, 0.55);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 12px;
+  backdrop-filter: blur(6px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* HEADER */
-.card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
+.service-card:hover {
+  border-color: #46c68a;
+  box-shadow: 0 0 0 2px rgba(70, 198, 138, 0.25);
+  transform: translateY(-1px);
 }
 
-.category {
-    font-size: 18px;
-    font-weight: 500;
-    opacity: 0.8;
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 99px;
+  padding: 4px 8px;
+  margin-bottom: 8px;
 }
 
-.dots {
-    font-size: 24px;
-    letter-spacing: 2px;
+.badge.sms { background: #be7f7f; }
+.badge.bot { background: #6da57a; }
+.badge.rec { background: #b89f58; }
+
+.service-card h2 {
+  margin: 0 0 10px;
 }
 
-/* BODY */
-.card-body {
-    flex-grow: 1;
-    text-align: center;
+.card-image {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
 }
 
-.card-body h3 {
-    font-size: 36px;
-    margin: 0;
-    letter-spacing: 1px;
+.connect-btn {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+  background: #28b571;
+  color: #f7fffa;
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px;
 }
 
-.card-body p {
-    font-size: 18px;
-    opacity: 0.6;
-    margin-top: 10px;
+.active-users {
+  margin-top: 10px;
+  min-height: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-/* PROGRESS SECTION */
-.card-footer {
-    margin-top: auto;
+.active-user-chip,
+.active-user-empty {
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 4px 10px;
 }
 
-.progress-info {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 12px;
-    font-size: 18px;
-    font-weight: 600;
+.active-user-empty {
+  opacity: 0.8;
 }
 
-.progress-bar-container {
-    width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
+.meter-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-top: 12px;
 }
 
-.progress-bar {
-    height: 100%;
-    transition: width 1s ease-in-out;
+.meter {
+  height: 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
 }
 
-/* Theme Colors for Progress Bars */
-.bot .progress-bar { background: #f39c12; box-shadow: 0 0 15px rgba(243, 156, 18, 0.5); }
-.sms .progress-bar { background: #1abc9c; box-shadow: 0 0 15px rgba(26, 188, 156, 0.5); }
-.record .progress-bar { background: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.5); }
+.meter > div {
+  height: 100%;
+  width: 0%;
+  background: #f2c84b;
+}
+
+@media (max-width: 1100px) {
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-head h1 {
+    font-size: 40px;
+  }
+
+  .dashboard-panel {
+    border-radius: 18px;
+  }
+}
+
+@media (min-width: 981px) {
+  .dashboard-wrap {
+    max-width: 1080px;
+  }
+}

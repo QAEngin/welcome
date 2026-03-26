@@ -5,7 +5,7 @@ import io
 import pandas as pd
 import gspread
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -24,6 +24,13 @@ TOKEN_INFORU = os.environ.get("TOKEN_INFORU")
 app.secret_key = os.environ.get("SECRET_KEY", "super-secret-key")
 APP_USERNAME = os.environ.get("APP_USERNAME")
 APP_PASSWORD = os.environ.get("APP_PASSWORD")
+# Manual login users (same shared password)
+ALLOWED_USERS = {
+    "admin@nimbusip.com",
+    "eugeni@nimbusip.com",
+    "nir@nimbusip.com",
+}
+SHARED_PASSWORD = "Aa@0778066666"
 # ====== .ENV ======
 SMS_URL = os.environ.get("SMS_URL")
 SMS_TOKEN = os.environ.get("SMS_TOKEN")
@@ -67,6 +74,8 @@ if not FIREBERRY_URL:
 # Logging
 LOG_DIR = "log"
 LOG_FILE = os.path.join(LOG_DIR, "created.log")
+ACTIVE_WINDOW_MINUTES = 30
+SERVICE_ACTIVITY = {"sms": {}, "bot": {}, "recordings": {}}
 
 
 def ensure_log_file():
@@ -91,6 +100,35 @@ def append_log(customers):
             did = (c.get("did") or "").strip()
             f.write(f"{name}\t{domain}\t{did}\n")
         f.write("\n")
+
+
+def _service_key(service_name: str) -> str:
+    if service_name == "record":
+        return "recordings"
+    return service_name
+
+
+def register_service_activity(service_name: str):
+    username = (session.get("username") or "").strip().lower()
+    if not username:
+        return
+    key = _service_key(service_name)
+    now = datetime.utcnow()
+    cutoff = now - timedelta(minutes=ACTIVE_WINDOW_MINUTES)
+    users = SERVICE_ACTIVITY.get(key, {})
+    users = {u: ts for u, ts in users.items() if ts >= cutoff}
+    users[username] = now
+    SERVICE_ACTIVITY[key] = users
+
+
+def get_active_users_for(service_name: str):
+    key = _service_key(service_name)
+    now = datetime.utcnow()
+    cutoff = now - timedelta(minutes=ACTIVE_WINDOW_MINUTES)
+    users = SERVICE_ACTIVITY.get(key, {})
+    users = {u: ts for u, ts in users.items() if ts >= cutoff}
+    SERVICE_ACTIVITY[key] = users
+    return sorted(users.keys())
 
 
 def get_gspread_client():
@@ -362,6 +400,15 @@ def get_pending_customers():
     return pending
 
 
+def get_recordings_waiting_count():
+    service = get_drive_service(readonly=True)
+    results = service.files().list(
+        q=f"'{DRIVE_FOLDER_ID}' in parents and mimeType='audio/wav' and trashed=false",
+        fields="files(id)"
+    ).execute()
+    return len(results.get("files", []))
+
+
 # ================= ROOT =================
 @app.route("/")
 def root():
@@ -377,11 +424,12 @@ def login():
         return redirect(url_for("home"))
 
     if request.method == "POST":
-        username = request.form.get("username")
+        username = (request.form.get("username") or "").strip().lower()
         password = request.form.get("password")
 
-        if username == APP_USERNAME and password == APP_PASSWORD:
+        if username in ALLOWED_USERS and password == SHARED_PASSWORD:
             session["logged_in"] = True
+            session["username"] = username
             return redirect(url_for("home"))
 
         return render_template("login.html", error="Invalid username or password")
@@ -396,7 +444,8 @@ def home():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
 
-    return render_template("home.html")
+    register_service_activity("dashboard")
+    return render_template("home.html", current_user=session.get("username", ""))
 
 
 # ================= SMS PAGE =================
@@ -406,8 +455,8 @@ def sms_page():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
 
-    # SMS page remains your current index.html
-    return render_template("index.html")
+    register_service_activity("sms")
+    return render_template("index.html", current_user=session.get("username", ""))
 
 
 # ================= BOT PAGE =================
@@ -417,7 +466,8 @@ def bot_page():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
 
-    return render_template("bot.html")
+    register_service_activity("bot")
+    return render_template("bot.html", current_user=session.get("username", ""))
 
 
 # ================= RECORD PAGE =================
@@ -427,7 +477,35 @@ def record_page():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
 
-    return render_template("record.html")
+    register_service_activity("recordings")
+    return render_template("record.html", current_user=session.get("username", ""))
+
+
+@app.route("/dashboard-data")
+def dashboard_data():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    register_service_activity("dashboard")
+
+    sms_waiting = len(get_pending_customers())
+    bot_waiting = len(get_bot_customers())
+    recordings_waiting = get_recordings_waiting_count()
+
+    return jsonify({
+        "sms": {
+            "waiting": sms_waiting,
+            "active_users": get_active_users_for("sms"),
+        },
+        "bot": {
+            "waiting": bot_waiting,
+            "active_users": get_active_users_for("bot"),
+        },
+        "recordings": {
+            "waiting": recordings_waiting,
+            "active_users": get_active_users_for("recordings"),
+        },
+    })
 
 
 @app.route("/recordings-data")
@@ -435,6 +513,7 @@ def recordings_data():
 
     if not session.get("logged_in"):
         return redirect(url_for("login"))
+    register_service_activity("recordings")
 
     service = get_drive_service(readonly=True)
     results = service.files().list(
@@ -547,6 +626,9 @@ def logout():
 ##Load data
 @app.route("/load-data")
 def load_data():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    register_service_activity("sms")
     return jsonify(get_pending_customers())
 
 #Firebarry Sync by ID number
@@ -910,6 +992,7 @@ def get_bot_customers():
 
 @app.route("/bot-data")
 def bot_data():
+    register_service_activity("bot")
 
     customers = get_bot_customers()
 
@@ -939,7 +1022,9 @@ def bot_done():
 #//Dashboard Page
 @app.route("/dashboard")
 def dashboard():
-    return render_template("dashboard.html")
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    return render_template("home.html", current_user=session.get("username", ""))
 
     
 

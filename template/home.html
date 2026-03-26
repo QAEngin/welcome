@@ -1,88 +1,82 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl">
-
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Nimbus Dashboard</title>
-
-
-<link rel="stylesheet" href="home.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Services Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/nav.css">
+  <link rel="stylesheet" href="/home.css">
 </head>
-
 <body>
+  <nav class="site-nav">
+    <div class="site-nav-inner">
+      <a class="brand" href="/home"><span class="brand-kicker">Support Suite</span><span class="brand-main">Services</span></a>
+      <button class="nav-toggle" type="button">Menu</button>
+      <div class="nav-links">
+        <a class="nav-link" href="/sms"><span class="nav-icon"><i class="fa-solid fa-comment-sms"></i></span><span class="nav-label">SMS</span></a>
+        <a class="nav-link" href="/bot"><span class="nav-icon"><i class="fa-solid fa-robot"></i></span><span class="nav-label">Bot</span></a>
+        <a class="nav-link" href="/record"><span class="nav-icon"><i class="fa-solid fa-record-vinyl"></i></span><span class="nav-label">Recordings</span></a>
+        <a class="nav-link active" href="/home"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span><span class="nav-label">Dashboard</span></a>
+      </div>
+      <div class="nav-footer">
+        <div class="nav-user">{{ current_user or "" }}</div>
+        <a class="nav-logout" href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </div>
+  </nav>
 
-    <section class="dashboard">
+  <main class="dashboard-wrap">
+    <section class="dashboard-panel">
+    <header class="dash-head">
+      <p class="welcome">Welcome back, {{ current_user or "user" }}</p>
+      <h1>Services</h1>
+    </header>
 
-        <div class="card bot" onclick="location.href='/bot'">
-          <div class="card-header">
-            <span class="category">BOT Queue</span>
-            <div class="dots">•••</div>
-          </div>
-      
-          <div class="card-body">
-            <h3>BOT</h3>
-            <p>שירות מענה בוט</p>
-          </div>
-      
-          <div class="card-footer">
-            <div class="progress-info">
-              <span>Progress</span>
-              <span id="bot-percent">0%</span>
-            </div>
-            <div class="progress-bar-container">
-              <div class="progress-bar" id="bot-progress" style="width: 45%;"></div>
-            </div>
-          </div>
+    <section class="card-grid">
+      <article class="service-card">
+        <span class="badge sms">SMS</span>
+        <h2>SMS Service</h2>
+        <img class="card-image" src="/card/sms.jpg" alt="SMS Service">
+        <a class="connect-btn" href="/sms">Connect</a>
+        <div class="active-users" id="sms-users"></div>
+        <div class="meter-row">
+          <span>Waiting</span>
+          <span id="sms-waiting-count">0</span>
         </div>
-      
-        <div class="card sms" onclick="location.href='/sms'">
-          <div class="card-header">
-            <span class="category">SMS Queue</span>
-            <div class="dots">•••</div>
-          </div>
-      
-          <div class="card-body">
-            <h3>SMS</h3>
-            <p>הודעות SMS</p>
-          </div>
-      
-          <div class="card-footer">
-            <div class="progress-info">
-              <span>Progress</span>
-              <span id="sms-percent">0%</span>
-            </div>
-            <div class="progress-bar-container">
-              <div class="progress-bar" id="sms-progress" style="width: 70%;"></div>
-            </div>
-          </div>
+        <div class="meter"><div id="sms-waiting-bar"></div></div>
+      </article>
+
+      <article class="service-card">
+        <span class="badge bot">Bot</span>
+        <h2>Bot Service</h2>
+        <img class="card-image" src="https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&w=900&q=60" alt="Bot Service">
+        <a class="connect-btn" href="/bot">Connect</a>
+        <div class="active-users" id="bot-users"></div>
+        <div class="meter-row">
+          <span>Waiting</span>
+          <span id="bot-waiting-count">0</span>
         </div>
-      
-        <div class="card record" onclick="location.href='/record'">
-          <div class="card-header">
-            <span class="category">Recording Queue</span>
-            <div class="dots">...</div>
-          </div>
+        <div class="meter"><div id="bot-waiting-bar"></div></div>
+      </article>
 
-          <div class="card-body">
-            <h3>Recording</h3>
-            <p>IVR Recordings</p>
-          </div>
-
-          <div class="card-footer">
-            <div class="progress-info">
-              <span>Progress</span>
-              <span>Ready</span>
-            </div>
-            <div class="progress-bar-container">
-              <div class="progress-bar" style="width: 100%;"></div>
-            </div>
-          </div>
+      <article class="service-card">
+        <span class="badge rec">Recordings</span>
+        <h2>Recording Service</h2>
+        <img class="card-image" src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=900&q=60" alt="Recording Service">
+        <a class="connect-btn" href="/record">Connect</a>
+        <div class="active-users" id="recordings-users"></div>
+        <div class="meter-row">
+          <span>Waiting</span>
+          <span id="recordings-waiting-count">0</span>
         </div>
+        <div class="meter"><div id="recordings-waiting-bar"></div></div>
+      </article>
+    </section>
+    </section>
+  </main>
 
-      </section>
-
-<script src="home.js"></script>
-
+  <script src="/nav.js"></script>
+  <script src="/home.js"></script>
 </body>
 </html>

@@ -1,16 +1,43 @@
-async function loadProgress(){
-
-    const res = await fetch("/dashboard-stats")
-    const data = await res.json()
-
-    // SMS
-    document.getElementById("sms-percent").innerText = data.sms_percent + "%"
-    document.getElementById("sms-progress").style.width = data.sms_percent + "%"
-
-    // BOT
-    document.getElementById("bot-percent").innerText = data.bot_percent + "%"
-    document.getElementById("bot-progress").style.width = data.bot_percent + "%"
-
+function renderUsers(serviceKey, users) {
+  const host = document.getElementById(`${serviceKey}-users`);
+  if (!host) return;
+  if (!Array.isArray(users) || users.length === 0) {
+    host.innerHTML = '<span class="active-user-empty">No active users</span>';
+    return;
+  }
+  host.innerHTML = users
+    .map((u) => `<span class="active-user-chip">${u}</span>`)
+    .join("");
 }
 
-loadProgress()
+function renderWaiting(serviceKey, waiting) {
+  const value = Number(waiting) || 0;
+  const countEl = document.getElementById(`${serviceKey}-waiting-count`);
+  const barEl = document.getElementById(`${serviceKey}-waiting-bar`);
+  if (countEl) countEl.textContent = String(value);
+  if (barEl) {
+    const width = Math.min(100, value * 5);
+    barEl.style.width = `${width}%`;
+  }
+}
+
+async function loadDashboardData() {
+  try {
+    const res = await fetch("/dashboard-data");
+    if (!res.ok) return;
+    const data = await res.json();
+    renderWaiting("sms", data?.sms?.waiting);
+    renderUsers("sms", data?.sms?.active_users);
+    renderWaiting("bot", data?.bot?.waiting);
+    renderUsers("bot", data?.bot?.active_users);
+    renderWaiting("recordings", data?.recordings?.waiting);
+    renderUsers("recordings", data?.recordings?.active_users);
+  } catch (err) {
+    console.error("dashboard data error", err);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadDashboardData();
+  setInterval(loadDashboardData, 20000);
+});

@@ -74,6 +74,7 @@ if not FIREBERRY_URL:
 # Logging
 LOG_DIR = "log"
 LOG_FILE = os.path.join(LOG_DIR, "created.log")
+INFORU_LOG_FILENAME = "\u05de\u05e1\u05e4\u05e8\u05d9\u05dd \u05dc\u05d0\u05d9\u05de\u05d5\u05ea.txt"
 ACTIVE_WINDOW_MINUTES = 30
 SERVICE_ACTIVITY = {"sms": {}, "bot": {}, "recordings": {}}
 
@@ -736,7 +737,7 @@ def send_inforu_mail():
     dids = list(dict.fromkeys(dids))
 
     os.makedirs("did_inforu", exist_ok=True)
-    path = os.path.join("did_inforu", "׳׳¡׳₪׳¨׳™׳ ׳׳׳™׳׳•׳×.txt")
+    path = os.path.join("did_inforu", INFORU_LOG_FILENAME)
 
     # read existing numbers
     existing_numbers = set()
@@ -756,11 +757,12 @@ def send_inforu_mail():
 
     block = f"""
 =={date_str}==
-׳©׳׳•׳ ׳¨׳‘,
-׳׳ ׳• ׳—׳‘׳¨׳× ׳ ׳™׳׳‘׳•׳¡ ׳˜׳׳§׳•׳ ׳‘׳¢\"׳ ׳׳¡׳₪׳¨ ׳—.׳₪. 514684125, ׳׳׳©׳¨׳™׳ ׳‘׳–׳׳× ׳›׳™ ׳׳¡׳₪׳¨׳™ ׳§׳•
-{numbers_str} (׳§׳•׳™ ׳׳¨׳›׳–׳™׳”) ׳‘׳‘׳¢׳׳•׳×׳ ׳•/׳‘׳‘׳¢׳׳•׳× ׳׳§׳•׳— ׳©׳׳ ׳• ׳•׳”׳•׳ ׳׳™׳ ׳• ׳׳×׳—׳–׳”.
-׳׳©׳׳— ׳׳‘׳™׳¦׳•׳¢ ׳׳™׳׳•׳× ׳׳¡׳₪׳¨ ׳‘׳‘׳§׳©׳” ׳›׳“׳™ ׳׳§׳“׳ ׳׳× ׳×׳”׳׳™׳ ׳”׳§׳׳× ׳©׳™׳¨׳•׳× ׳׳׳§׳•׳—׳•׳×
-׳×׳•׳“׳”
+\u05e9\u05dc\u05d5\u05dd \u05e8\u05d1,
+\u05d0\u05e0\u05d5 \u05d7\u05d1\u05e8\u05ea \u05e0\u05d9\u05de\u05d1\u05d5\u05e1 \u05d8\u05dc\u05e7\u05d5\u05dd \u05d1\u05e2\"\u05de (\u05d7.\u05e4 514684125), \u05de\u05d0\u05e9\u05e8\u05d9\u05dd \u05d1\u05d6\u05d0\u05ea \u05db\u05d9 \u05de\u05e1\u05e4\u05e8\u05d9 \u05d4\u05e7\u05d5 \u05d4\u05d1\u05d0\u05d9\u05dd:
+{numbers_str}
+\u05d4\u05dd \u05d1\u05d1\u05e2\u05dc\u05d5\u05ea\u05e0\u05d5/\u05d1\u05d1\u05e2\u05dc\u05d5\u05ea \u05dc\u05e7\u05d5\u05d7 \u05e9\u05dc\u05e0\u05d5 \u05d5\u05d0\u05d9\u05e0\u05dd \u05de\u05ea\u05d7\u05d6\u05d9\u05dd.
+\u05e0\u05e9\u05de\u05d7 \u05dc\u05d1\u05d9\u05e6\u05d5\u05e2 \u05d0\u05d9\u05de\u05d5\u05ea \u05de\u05e1\u05e4\u05e8 \u05dc\u05e6\u05d5\u05e8\u05da \u05e7\u05d9\u05d3\u05d5\u05dd \u05d4\u05e7\u05de\u05ea \u05d4\u05e9\u05d9\u05e8\u05d5\u05ea.
+\u05ea\u05d5\u05d3\u05d4
 
 """
 
@@ -795,13 +797,35 @@ def send_inforu_mail():
 @app.route("/inforu-log", methods=["GET"])
 def get_inforu_log():
 
-    path = os.path.join("did_inforu", "׳׳¡׳₪׳¨׳™׳ ׳׳׳™׳׳•׳×.txt")
+    path = os.path.join("did_inforu", INFORU_LOG_FILENAME)
 
     if not os.path.exists(path):
-        return ""
+        fallback_dir = "did_inforu"
+        if os.path.isdir(fallback_dir):
+            txt_files = [f for f in os.listdir(fallback_dir) if f.lower().endswith(".txt")]
+            if txt_files:
+                path = os.path.join(fallback_dir, txt_files[0])
+            else:
+                return ""
+        else:
+            return ""
 
-    with open(path, "r", encoding="utf-8") as f:
-        content = f.read()
+    with open(path, "rb") as f:
+        raw = f.read()
+
+    try:
+        content = raw.decode("utf-8")
+    except UnicodeDecodeError:
+        content = raw.decode("cp1255", errors="replace")
+
+    # Repair common mojibake pattern seen in old log entries.
+    if "׳" in content:
+        try:
+            repaired = content.encode("latin1", errors="ignore").decode("utf-8", errors="ignore")
+            if repaired.strip():
+                content = repaired
+        except Exception:
+            pass
 
     return content
 

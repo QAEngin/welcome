@@ -101,6 +101,55 @@ body{
   font-size:18px;
 }
 
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.36);
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.confirm-card {
+  background: #fff;
+  border-radius: 14px;
+  width: min(92vw, 380px);
+  padding: 18px;
+  border: 1px solid #d9d4c7;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.2);
+}
+
+.confirm-card h3 {
+  margin: 0 0 8px;
+}
+
+.confirm-card p {
+  margin: 0 0 14px;
+  color: #555;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirm-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  background: #2f9869;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirm-btn.ghost {
+  background: #ece7db;
+  color: #333;
+}
+
 @media (max-width:980px){
   .title{
     font-size:28px;

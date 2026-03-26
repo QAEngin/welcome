@@ -6,7 +6,7 @@ function renderUsers(serviceKey, users) {
     return;
   }
   host.innerHTML = users
-    .map((u) => `<span class="active-user-chip">${u}</span>`)
+    .map((u) => `<span class="active-user-chip">${String(u || "").split("@")[0]}</span>`)
     .join("");
 }
 

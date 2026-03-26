@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
+﻿from flask import Flask, render_template, request, jsonify, send_file
 import os
 import re
 import io
@@ -7,6 +7,8 @@ import gspread
 import requests
 from datetime import datetime
 from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
 from dotenv import load_dotenv
 from flask import session, redirect, url_for
 
@@ -29,29 +31,33 @@ SMS_TOKEN = os.environ.get("SMS_TOKEN")
 SPREADSHEET_ID = "1uwtREvtWENPabibI5FSlhdYokIbBs_kuZmYVeL-BgCQ"
 SHEET_NAME = "SMS"
 # Bot sheet
-BOT_SHEET_NAME = "שירות מענה - בוט"
+BOT_SHEET_NAME = "\u05e9\u05d9\u05e8\u05d5\u05ea \u05de\u05e2\u05e0\u05d4 - \u05d1\u05d5\u05d8"
 
 # NumberCGR pool sheet
-CGR_SHEET_NAME = "חיפ_סמס"
+CGR_SHEET_NAME = "\u05d7\u05d9\u05e4_\u05e1\u05de\u05e1"
 CGR_START_ROW = 312
 CGR_COL_NUMBER = 1  # A
 CGR_COL_MARK = 3    # B (checkbox/mark)
 
 # Column mapping (1-based for gspread)
 COL_NAME = 1       # A
-COL_IDNUMBER = 2   # B (ח.פ) hidden in UI
+COL_IDNUMBER = 2   # B (׳—.׳₪) hidden in UI
 COL_STATUS = 8     # H
 COL_SMS_TEXT = 10  # J
 COL_K = 11         # K
 
-STATUS_PENDING = "ממתין"
-STATUS_DONE = "בוצע"
-K_REQUIRED_VALUE = "לקוח הותקן"
+STATUS_PENDING = "\u05de\u05de\u05ea\u05d9\u05df"
+STATUS_DONE = "\u05d1\u05d5\u05e6\u05e2"
+K_REQUIRED_VALUE = "\u05dc\u05e7\u05d5\u05d7 \u05d4\u05d5\u05ea\u05e7\u05df"
 
 # ENV
-CREDENTIALS_FILE = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "credentials.json")
-FIREBERRY_TOKENID = os.environ.get("FIREBERRY_TOKENID")
-FIREBERRY_URL = os.environ.get("CRM_URL")
+CREDENTIALS_FILE = (os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "credentials.json") or "").strip()
+FIREBERRY_TOKENID = (os.environ.get("FIREBERRY_TOKENID") or "").strip()
+CRM_URL = (os.environ.get("CRM_URL") or "").strip()
+FIREBERRY_URL = CRM_URL
+FIREBERRY_ENDPOINT = (os.environ.get("FIREBERRY_ENDPOINT") or "").strip()
+DRIVE_FOLDER_ID = os.environ.get("DRIVE_FOLDER_ID", "1MOdZ1gTYGizpKlc6CtErskM_KMRp-2Db")
+DRIVE_DONE_FOLDER_NAME = os.environ.get("DRIVE_DONE_FOLDER_NAME", "Done")
 
 if not FIREBERRY_TOKENID:
     raise RuntimeError("FIREBERRY_TOKENID not found in .env")
@@ -78,7 +84,7 @@ def append_log(customers):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(f"=== {ts} | Status -> {STATUS_DONE} | Count: {len(customers)} ===\n")
-        f.write("שם לקוח\tDomain\tDID\n")
+        f.write("׳©׳ ׳׳§׳•׳—\tDomain\tDID\n")
         for c in customers:
             name = (c.get("name") or "").strip()
             domain = (c.get("domain") or "").strip()
@@ -200,13 +206,76 @@ def fireberry_lookup_domain_by_record_id(record_id):
     return ""
 
 
+def get_drive_service(readonly=True):
+    scope = ["https://www.googleapis.com/auth/drive.readonly"] if readonly else ["https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scope)
+    return build("drive", "v3", credentials=creds)
+
+
+def extract_order_id_from_record(filename: str) -> str:
+    base_name = os.path.splitext(os.path.basename(filename or ""))[0]
+    if not base_name:
+        return ""
+    # Primary rule: first 5 digits from the left side (allows leading spaces).
+    match = re.match(r"\s*(\d{5})", base_name)
+    if match:
+        return match.group(1)
+    # Fallback for names like "... - 12249.wav".
+    tail_match = re.search(r"(\d{5})\s*$", base_name)
+    return tail_match.group(1) if tail_match else ""
+
+
+def normalize_domain_value(value: str) -> str:
+    domain = (value or "").strip()
+    if not domain:
+        return ""
+    if domain.lower() == "accepted":
+        return ""
+    return domain
+
+
+def get_domain_from_crm(crmordernumber):
+    try:
+        if not FIREBERRY_ENDPOINT:
+            return ""
+
+        body = {"order_id": str(crmordernumber)}
+        r = requests.post(FIREBERRY_ENDPOINT, json=body, timeout=20)
+        r.raise_for_status()
+
+        raw = (r.text or "").strip()
+        if not raw:
+            return ""
+
+        try:
+            data = r.json()
+            if isinstance(data, dict):
+                value = (
+                    data.get("domain")
+                    or data.get("pcfsystemfield179")
+                    or (data.get("data") or {}).get("domain")
+                    or ""
+                )
+                return normalize_domain_value(str(value).strip() if value else raw)
+            if isinstance(data, (str, int, float)):
+                return normalize_domain_value(str(data).strip())
+        except ValueError:
+            pass
+
+        return normalize_domain_value(raw)
+
+    except Exception as e:
+        print("CRM error:", e)
+        return ""
+
+
 def get_pending_customers():
     """
     Returns customers where:
-      H == ממתין AND K == לקוח הותקן
+      H == ׳׳׳×׳™׳ AND K == ׳׳§׳•׳— ׳”׳•׳×׳§׳
     Also includes:
       - idnumber (hidden)
-      - numbercgr from sheet חיפ_סמס (only rows where column C empty)
+      - numbercgr from sheet ׳—׳™׳₪_׳¡׳׳¡ (only rows where column C empty)
       - cgr_row (for updates on export)
       - cgr_marked (green/yellow indicator from column B)
     """
@@ -239,7 +308,7 @@ def get_pending_customers():
             "status": status
         })
 
-    # Attach NumberCGR from חיפ_סמס (ONLY rows where column C empty)
+    # Attach NumberCGR from ׳—׳™׳₪_׳¡׳׳¡ (ONLY rows where column C empty)
     try:
         if pending:
             cgr_ws = client.open_by_key(SPREADSHEET_ID).worksheet(CGR_SHEET_NAME)
@@ -303,7 +372,7 @@ def root():
 @app.route("/login", methods=["GET", "POST"])
 def login():
 
-    # If already logged in → go to home
+    # If already logged in ג†’ go to home
     if session.get("logged_in"):
         return redirect(url_for("home"))
 
@@ -349,6 +418,125 @@ def bot_page():
         return redirect(url_for("login"))
 
     return render_template("bot.html")
+
+
+# ================= RECORD PAGE =================
+@app.route("/record")
+def record_page():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    return render_template("record.html")
+
+
+@app.route("/recordings-data")
+def recordings_data():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    service = get_drive_service(readonly=True)
+    results = service.files().list(
+        q=f"'{DRIVE_FOLDER_ID}' in parents and mimeType='audio/wav' and trashed=false",
+        fields="files(id,name)"
+    ).execute()
+
+    files = results.get("files", [])
+    output = []
+    domain_by_order = {}
+
+    for f in files:
+        order_id = extract_order_id_from_record(f.get("name", ""))
+        if order_id and order_id not in domain_by_order:
+            domain_by_order[order_id] = get_domain_from_crm(order_id)
+
+    for f in files:
+        name = f.get("name", "")
+        file_id = f.get("id", "")
+        order_id = extract_order_id_from_record(name)
+        domain = domain_by_order.get(order_id, "") if order_id else ""
+
+        output.append({
+            "name": name,
+            "file_id": file_id,
+            "order_id": order_id,
+            "domain": domain
+        })
+
+    return jsonify(output)
+
+
+@app.route("/download-record/<file_id>/<domain>")
+def download_record(file_id, domain):
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    service = get_drive_service(readonly=True)
+    request_drive = service.files().get_media(fileId=file_id)
+
+    file_data = io.BytesIO()
+    downloader = MediaIoBaseDownload(file_data, request_drive)
+
+    done = False
+    while not done:
+        _, done = downloader.next_chunk()
+
+    file_data.seek(0)
+
+    if domain == "nodomain":
+        domain = ""
+
+    filename = f"{domain}_IVR.wav" if domain else "record_IVR.wav"
+    return send_file(
+        file_data,
+        mimetype="audio/wav",
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@app.route("/mark-done/<file_id>", methods=["POST"])
+def mark_record_done(file_id):
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    service = get_drive_service(readonly=False)
+
+    file_meta = service.files().get(fileId=file_id, fields="id,parents").execute()
+    current_parents = file_meta.get("parents", [])
+
+    done_query = (
+        f"'{DRIVE_FOLDER_ID}' in parents and "
+        f"name = '{DRIVE_DONE_FOLDER_NAME}' and "
+        "mimeType = 'application/vnd.google-apps.folder' and trashed=false"
+    )
+    done_search = service.files().list(q=done_query, fields="files(id,name)").execute().get("files", [])
+
+    if done_search:
+        done_folder_id = done_search[0]["id"]
+    else:
+        done_folder = service.files().create(
+            body={
+                "name": DRIVE_DONE_FOLDER_NAME,
+                "mimeType": "application/vnd.google-apps.folder",
+                "parents": [DRIVE_FOLDER_ID]
+            },
+            fields="id"
+        ).execute()
+        done_folder_id = done_folder["id"]
+
+    remove_parents = ",".join(current_parents) if current_parents else ""
+    service.files().update(
+        fileId=file_id,
+        addParents=done_folder_id,
+        removeParents=remove_parents,
+        fields="id,parents"
+    ).execute()
+
+    return jsonify({"ok": True})
 
 
 # ================= LOGOUT =================
@@ -415,7 +603,7 @@ def mark_done():
             "did": did
         })
 
-        # CGR sheet update (חיפ_סמס column C)
+        # CGR sheet update (׳—׳™׳₪_׳¡׳׳¡ column C)
         if isinstance(cgr_row, int) and domain:
             cgr_updates.append({
                 "range": gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_MARK),
@@ -466,7 +654,7 @@ def send_inforu_mail():
     dids = list(dict.fromkeys(dids))
 
     os.makedirs("did_inforu", exist_ok=True)
-    path = os.path.join("did_inforu", "מספרים לאימות.txt")
+    path = os.path.join("did_inforu", "׳׳¡׳₪׳¨׳™׳ ׳׳׳™׳׳•׳×.txt")
 
     # read existing numbers
     existing_numbers = set()
@@ -486,11 +674,11 @@ def send_inforu_mail():
 
     block = f"""
 =={date_str}==
-שלום רב,
-אנו חברת נימבוס טלקום בע\"ם מספר ח.פ. 514684125, מאשרים בזאת כי מספרי קו
-{numbers_str} (קוי מרכזיה) בבעלותנו/בבעלות לקוח שלנו והוא אינו מתחזה.
-אשמח לביצוע אימות מספר בבקשה כדי לקדם את תהלים הקמת שירות ללקוחות
-תודה
+׳©׳׳•׳ ׳¨׳‘,
+׳׳ ׳• ׳—׳‘׳¨׳× ׳ ׳™׳׳‘׳•׳¡ ׳˜׳׳§׳•׳ ׳‘׳¢\"׳ ׳׳¡׳₪׳¨ ׳—.׳₪. 514684125, ׳׳׳©׳¨׳™׳ ׳‘׳–׳׳× ׳›׳™ ׳׳¡׳₪׳¨׳™ ׳§׳•
+{numbers_str} (׳§׳•׳™ ׳׳¨׳›׳–׳™׳”) ׳‘׳‘׳¢׳׳•׳×׳ ׳•/׳‘׳‘׳¢׳׳•׳× ׳׳§׳•׳— ׳©׳׳ ׳• ׳•׳”׳•׳ ׳׳™׳ ׳• ׳׳×׳—׳–׳”.
+׳׳©׳׳— ׳׳‘׳™׳¦׳•׳¢ ׳׳™׳׳•׳× ׳׳¡׳₪׳¨ ׳‘׳‘׳§׳©׳” ׳›׳“׳™ ׳׳§׳“׳ ׳׳× ׳×׳”׳׳™׳ ׳”׳§׳׳× ׳©׳™׳¨׳•׳× ׳׳׳§׳•׳—׳•׳×
+׳×׳•׳“׳”
 
 """
 
@@ -525,7 +713,7 @@ def send_inforu_mail():
 @app.route("/inforu-log", methods=["GET"])
 def get_inforu_log():
 
-    path = os.path.join("did_inforu", "מספרים לאימות.txt")
+    path = os.path.join("did_inforu", "׳׳¡׳₪׳¨׳™׳ ׳׳׳™׳׳•׳×.txt")
 
     if not os.path.exists(path):
         return ""
@@ -569,14 +757,14 @@ def export_csv():
             "template": template_txt
         }
         )
-        # Update חיפ_סמס Column B with Domain (as requested)
+        # Update ׳—׳™׳₪_׳¡׳׳¡ Column B with Domain (as requested)
         if isinstance(cgr_row, int) and cgr_row >= 1 and domain:
             updates.append({
                 "range": gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_MARK),
                 "values": [[domain]]
             })
 
-    # Update Google Sheet חיפ_סמס
+    # Update Google Sheet ׳—׳™׳₪_׳¡׳׳¡
     try:
         if updates:
             client = get_gspread_client()
@@ -714,7 +902,7 @@ def get_bot_customers():
                 "client_id": client_id,
                 "did": did,
                 "domain": "",
-                "status": "ממתין"
+                "status": "׳׳׳×׳™׳"
             })
 
     return customers
@@ -757,3 +945,4 @@ def dashboard():
 
 if __name__ == "__main__":
     app.run(port=5059, debug=True)
+

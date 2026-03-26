@@ -1,0 +1,77 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    padding: 20px;
+}
+
+h2 {
+    margin-bottom: 14px;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    background: white;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background: #007bff;
+    color: white;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.load-btn {
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background: #007bff;
+    color: #fff;
+}
+
+.actions-cell {
+    white-space: nowrap;
+    width: 160px;
+}
+
+.status-cell {
+    width: 140px;
+    text-align: center;
+}
+
+.actions-cell a {
+    display: inline-block;
+}
+
+.done-btn {
+    padding: 7px 12px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    background: #2e7d32;
+    color: #fff;
+    transform: translateX(-6px);
+}
+
+.done-btn:hover {
+    background: #b9f6ca;
+    color: #1b5e20;
+}
+
+.done-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}

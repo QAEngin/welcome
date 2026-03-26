@@ -466,7 +466,7 @@ async function sendInforuMail(){
   
       renderTable();
   
-      alert("נשלח אימות Inforu");
+      alert("נשלח אימות Inforu️✅");
   
     }catch(e){
       alert("שגיאה בשליחה: " + e);
@@ -590,3 +590,7 @@ async function createSMS(){
     }
   
   }
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadData();
+});

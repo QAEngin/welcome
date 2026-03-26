@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Recordings</title>
+<link rel="stylesheet" href="/record.css">
+</head>
+<body>
+
+<h2>Recordings</h2>
+
+<button class="load-btn" onclick="loadData()">Load Recordings</button>
+
+<table id="table">
+    <thead>
+        <tr>
+            <th>File</th>
+            <th>Order</th>
+            <th>Domain</th>
+            <th>Action</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="table-body"></tbody>
+</table>
+
+<script>
+async function loadData() {
+    const res = await fetch("/recordings-data");
+    const data = await res.json();
+
+    let html = "";
+
+    data.forEach((r) => {
+        html += `
+        <tr>
+            <td>${r.name}</td>
+            <td>${r.order_id}</td>
+            <td style="color:${r.domain ? "black" : "red"}">
+                ${r.domain || "MISSING"}
+            </td>
+            <td class="actions-cell">
+                <a href="/download-record/${r.file_id}/${r.domain || "nodomain"}">
+                    Download
+                </a>
+            </td>
+            <td class="status-cell">
+                <button class="done-btn" onclick="markDone('${r.file_id}', this)">
+                    Done
+                </button>
+            </td>
+        </tr>
+        `;
+    });
+
+    document.getElementById("table-body").innerHTML = html;
+}
+
+async function markDone(fileId, buttonEl) {
+    buttonEl.disabled = true;
+    const res = await fetch(`/mark-done/${fileId}`, {
+        method: "POST"
+    });
+
+    if (!res.ok) {
+        buttonEl.disabled = false;
+        const body = await res.text();
+        alert("Failed to move file to Done folder: " + body);
+        return;
+    }
+
+    await loadData();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadData();
+});
+</script>
+
+</body>
+</html>

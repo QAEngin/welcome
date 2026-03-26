@@ -111,7 +111,7 @@ transition:all .15s ease;
 .btn-green:hover,
 .btn-amber:hover,
 .btn-ghost:hover{
-color:#3498db;
+color:#156864;
 }
 
 .btn-blue:active,
@@ -418,15 +418,15 @@ inset -2px -2px 5px rgba(255,255,255,0.8);
     font-size:14px;
     text-decoration:none;
     color:white;
-    background:#4dabf7;
+    background:#a0a1a2;
     }
     
     .nav-btn:hover{
-    background:#339af0;
+    background:#0d0d0d;
     }
     
     .logout{
-    background:#fa5252;
+    background:#a5a4a4;
     }
     
     .logout:hover{

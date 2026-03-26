@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Nimbus Dashboard</title>
+
+<link rel="stylesheet" href="/dashboard.css">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+
+<body>
+
+<div class="dashboard">
+
+<!-- SIDEBAR -->
+
+<div class="sidebar">
+
+<div class="logo">
+Nimbus
+</div>
+
+<ul class="menu">
+
+<li class="active">
+<i class="fa-solid fa-chart-line"></i>
+Dashboard
+</li>
+
+<li>
+<i class="fa-solid fa-message"></i>
+SMS
+</li>
+
+<li>
+<i class="fa-solid fa-robot"></i>
+BOT
+</li>
+
+<li>
+<i class="fa-solid fa-phone"></i>
+IVR Rec
+</li>
+
+<li>
+<i class="fa-solid fa-envelope"></i>
+Email
+</li>
+
+<li>
+<i class="fa-solid fa-ticket"></i>
+Ticket
+</li>
+
+</ul>
+
+</div>
+
+
+
+<!-- MAIN -->
+
+<div class="main">
+
+<!-- TOP BAR -->
+
+<div class="topbar">
+
+<div class="search">
+
+<i class="fa fa-search"></i>
+<input type="text" placeholder="Search..." />
+
+</div>
+
+<div class="user-menu">
+
+<div class="status-dot"></div>
+
+<img src="/loginpng/avatar.png" alt="User Avatar"
+class="avatar"
+onclick="toggleUserMenu()">
+
+
+<div class="dropdown" id="userDropdown">
+
+<a href="#">Profile</a>
+
+<a href="/logout">
+Exit
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- CONTENT -->
+
+<div class="content">
+
+<h1>Dashboard</h1>
+
+<div class="cards">
+
+<div class="card purple">
+<h3>SMS Sent</h3>
+<p>1,245</p>
+</div>
+
+<div class="card green">
+<h3>Bot Sessions</h3>
+<p>832</p>
+</div>
+
+<div class="card blue" onclick="window.location.href='/record'" style="cursor:pointer;">
+<h3>Recording</h3>
+<p>Open</p>
+</div>
+
+<div class="card blue">
+<h3>Email Sent</h3>
+<p>2,190</p>
+</div>
+
+<div class="card orange">
+<h3>Open Tickets</h3>
+<p>12</p>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script src="/dashboard.js"></script>
+
+</body>
+</html>

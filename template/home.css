@@ -52,6 +52,10 @@ body {
     background: radial-gradient(circle at top right, rgba(26, 188, 156, 0.4), #111 70%);
 }
 
+.record {
+    background: radial-gradient(circle at top right, rgba(52, 152, 219, 0.4), #111 70%);
+}
+
 /* HEADER */
 .card-header {
     display: flex;
@@ -118,3 +122,4 @@ body {
 /* Theme Colors for Progress Bars */
 .bot .progress-bar { background: #f39c12; box-shadow: 0 0 15px rgba(243, 156, 18, 0.5); }
 .sms .progress-bar { background: #1abc9c; box-shadow: 0 0 15px rgba(26, 188, 156, 0.5); }
+.record .progress-bar { background: #3498db; box-shadow: 0 0 15px rgba(52, 152, 219, 0.5); }

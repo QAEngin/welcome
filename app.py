@@ -62,7 +62,6 @@ CREDENTIALS_FILE = (os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", "credential
 FIREBERRY_TOKENID = (os.environ.get("FIREBERRY_TOKENID") or "").strip()
 CRM_URL = (os.environ.get("CRM_URL") or "").strip()
 FIREBERRY_URL = CRM_URL
-FIREBERRY_ENDPOINT = (os.environ.get("FIREBERRY_ENDPOINT") or "").strip()
 DRIVE_FOLDER_ID = os.environ.get("DRIVE_FOLDER_ID", "1MOdZ1gTYGizpKlc6CtErskM_KMRp-2Db")
 DRIVE_DONE_FOLDER_NAME = os.environ.get("DRIVE_DONE_FOLDER_NAME", "Done")
 
@@ -275,33 +274,46 @@ def normalize_domain_value(value: str) -> str:
 
 def get_domain_from_crm(crmordernumber):
     try:
-        if not FIREBERRY_ENDPOINT:
+        if not crmordernumber:
+            return ""
+        if not FIREBERRY_TOKENID:
             return ""
 
-        body = {"order_id": str(crmordernumber)}
-        r = requests.post(FIREBERRY_ENDPOINT, json=body, timeout=20)
-        r.raise_for_status()
+        headers = {"tokenid": FIREBERRY_TOKENID}
 
-        raw = (r.text or "").strip()
-        if not raw:
+        order_body = {
+            "objecttype": 13,
+            "page_size": 1,
+            "page_number": 1,
+            "fields": "accountid,CrmOrderNumber",
+            "query": f"(CrmOrderNumber = '{crmordernumber}')",
+            "sort_type": "desc"
+        }
+        order_resp = requests.post(FIREBERRY_URL, headers=headers, json=order_body, timeout=20)
+        order_resp.raise_for_status()
+        order_rows = order_resp.json().get("data", {}).get("Data", [])
+        if not order_rows or not isinstance(order_rows[0], dict):
             return ""
 
-        try:
-            data = r.json()
-            if isinstance(data, dict):
-                value = (
-                    data.get("domain")
-                    or data.get("pcfsystemfield179")
-                    or (data.get("data") or {}).get("domain")
-                    or ""
-                )
-                return normalize_domain_value(str(value).strip() if value else raw)
-            if isinstance(data, (str, int, float)):
-                return normalize_domain_value(str(data).strip())
-        except ValueError:
-            pass
+        accountid = str(order_rows[0].get("accountid") or "").strip()
+        if not accountid:
+            return ""
 
-        return normalize_domain_value(raw)
+        account_body = {
+            "objecttype": 1,
+            "page_size": 1,
+            "page_number": 1,
+            "fields": "accountid,pcfsystemfield179,accountname",
+            "query": f"(accountid = '{accountid}')"
+        }
+        account_resp = requests.post(FIREBERRY_URL, headers=headers, json=account_body, timeout=20)
+        account_resp.raise_for_status()
+        account_rows = account_resp.json().get("data", {}).get("Data", [])
+        if not account_rows or not isinstance(account_rows[0], dict):
+            return ""
+
+        value = account_rows[0].get("pcfsystemfield179")
+        return normalize_domain_value(str(value).strip() if value is not None else "")
 
     except Exception as e:
         print("CRM error:", e)

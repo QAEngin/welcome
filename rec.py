@@ -25,7 +25,6 @@ CRM_URL = (os.getenv("CRM_URL") or "").strip()
 FIREBERRY_URL = CRM_URL
 FIREBERRY_TOKENID = (os.getenv("FIREBERRY_TOKENID") or "").strip()
 CREDENTIALS_FILE = (os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "credentials.json") or "").strip()
-FIREBERRY_ENDPOINT = (os.getenv("FIREBERRY_ENDPOINT") or "").strip()
 DRIVE_FOLDER_ID = os.getenv("DRIVE_FOLDER_ID", "1MOdZ1gTYGizpKlc6CtErskM_KMRp-2Db")
 DRIVE_DONE_FOLDER_NAME = os.getenv("DRIVE_DONE_FOLDER_NAME", "Done")
 
@@ -58,32 +57,44 @@ def get_domain_from_crm(crm_order_number: str) -> str:
         return ""
 
     try:
-        # Prefer the dedicated token variable; keep endpoint as backward-compatible fallback.
-        token_for_recording = FIREBERRY_TOKENID or FIREBERRY_ENDPOINT
-        if not token_for_recording:
+        if not FIREBERRY_TOKENID:
             return ""
 
-        headers = {"tokenid": token_for_recording}
-        body = {
+        headers = {"tokenid": FIREBERRY_TOKENID}
+        # Step 1: find accountid from order object (objecttype 13).
+        order_body = {
+            "objecttype": 13,
+            "page_size": 1,
+            "page_number": 1,
+            "fields": "accountid,CrmOrderNumber",
+            "query": f"(CrmOrderNumber = '{crm_order_number}')",
+            "sort_type": "desc"
+        }
+        order_resp = requests.post(FIREBERRY_URL, headers=headers, json=order_body, timeout=20)
+        order_resp.raise_for_status()
+        order_rows = order_resp.json().get("data", {}).get("Data", [])
+        if not order_rows or not isinstance(order_rows[0], dict):
+            return ""
+
+        accountid = str(order_rows[0].get("accountid") or "").strip()
+        if not accountid:
+            return ""
+
+        # Step 2: query account object (objecttype 1) and return domain.
+        account_body = {
             "objecttype": 1,
             "page_size": 1,
             "page_number": 1,
-            "fields": "Body,pcfsystemfield179,CrmOrder",
-            "query": f"(CrmOrder = '{crm_order_number}')"
+            "fields": "accountid,pcfsystemfield179,accountname",
+            "query": f"(accountid = '{accountid}')"
         }
-
-        r = requests.post(FIREBERRY_URL, headers=headers, json=body, timeout=20)
-        r.raise_for_status()
-        rows = r.json().get("data", {}).get("Data", [])
-
-        if not rows:
+        account_resp = requests.post(FIREBERRY_URL, headers=headers, json=account_body, timeout=20)
+        account_resp.raise_for_status()
+        account_rows = account_resp.json().get("data", {}).get("Data", [])
+        if not account_rows or not isinstance(account_rows[0], dict):
             return ""
 
-        row = rows[0] if isinstance(rows[0], dict) else {}
-        value = row.get("Body")
-        if value is None:
-            value = row.get("pcfsystemfield179")
-
+        value = account_rows[0].get("pcfsystemfield179")
         return str(value).strip() if value is not None else ""
 
     except Exception:

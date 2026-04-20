@@ -2,10 +2,13 @@
 import os
 import re
 import io
+import json
 import pandas as pd
 import gspread
 import requests
 from datetime import datetime, timedelta
+from google.auth.exceptions import RefreshError
+from google.auth.transport.requests import Request
 from google.oauth2.service_account import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -131,12 +134,58 @@ def get_active_users_for(service_name: str):
     return sorted(users.keys())
 
 
+def load_service_account_info():
+    creds_source = CREDENTIALS_FILE.strip()
+    if not creds_source:
+        raise RuntimeError("GOOGLE_APPLICATION_CREDENTIALS is empty.")
+
+    if creds_source.startswith("{"):
+        info = json.loads(creds_source)
+        source_label = "GOOGLE_APPLICATION_CREDENTIALS (inline JSON)"
+    else:
+        abs_path = os.path.abspath(creds_source)
+        if not os.path.exists(abs_path):
+            raise RuntimeError(f"Credentials file not found: {abs_path}")
+        with open(abs_path, "r", encoding="utf-8") as f:
+            info = json.load(f)
+        source_label = abs_path
+
+    if info.get("type") != "service_account":
+        raise RuntimeError(
+            f"Credentials must be a service account JSON. "
+            f"Found type={info.get('type')!r} in {source_label}"
+        )
+
+    private_key = info.get("private_key")
+    if not private_key:
+        raise RuntimeError(f"Missing private_key in {source_label}")
+
+    if "\\n" in private_key and "\n" not in private_key:
+        info["private_key"] = private_key.replace("\\n", "\n")
+
+    return info, source_label
+
+
 def get_gspread_client():
     scope = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
-    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scope)
+    creds_info, creds_source = load_service_account_info()
+    try:
+        creds = Credentials.from_service_account_info(creds_info, scopes=scope)
+        creds.refresh(Request())
+    except RefreshError as e:
+        message = str(e)
+        if "invalid_grant" in message or "Invalid JWT Signature" in message:
+            raise RuntimeError(
+                "Google auth failed: invalid_grant / Invalid JWT Signature. "
+                "Use a valid active service-account JSON key for this service account. "
+                f"Loaded from: {creds_source}"
+            ) from e
+        raise RuntimeError(f"Google auth refresh failed ({creds_source}): {message}") from e
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize Google credentials ({creds_source}): {e}") from e
     return gspread.authorize(creds)
 
 
@@ -246,7 +295,21 @@ def fireberry_lookup_domain_by_record_id(record_id):
 
 def get_drive_service(readonly=True):
     scope = ["https://www.googleapis.com/auth/drive.readonly"] if readonly else ["https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_file(CREDENTIALS_FILE, scopes=scope)
+    creds_info, creds_source = load_service_account_info()
+    try:
+        creds = Credentials.from_service_account_info(creds_info, scopes=scope)
+        creds.refresh(Request())
+    except RefreshError as e:
+        message = str(e)
+        if "invalid_grant" in message or "Invalid JWT Signature" in message:
+            raise RuntimeError(
+                "Google auth failed: invalid_grant / Invalid JWT Signature. "
+                "Use a valid active service-account JSON key for this service account. "
+                f"Loaded from: {creds_source}"
+            ) from e
+        raise RuntimeError(f"Google auth refresh failed ({creds_source}): {message}") from e
+    except Exception as e:
+        raise RuntimeError(f"Failed to initialize Google Drive credentials ({creds_source}): {e}") from e
     return build("drive", "v3", credentials=creds)
 
 

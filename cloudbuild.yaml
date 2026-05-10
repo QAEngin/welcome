@@ -1,0 +1,27 @@
+steps:
+  # Sync all files to bucket, excluding git and docs
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: [
+      'rsync', '-r', '-d', '-x', '\.git/.*|.*\.md$',
+      './',
+      'gs://hot-business-welcome-static/'
+    ]
+
+  # Set content types for proper serving
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['setmeta', '-h', 'Content-Type:text/html', 'gs://hot-business-welcome-static/*.html']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['setmeta', '-h', 'Content-Type:application/javascript', 'gs://hot-business-welcome-static/*.js']
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['setmeta', '-h', 'Content-Type:text/css', 'gs://hot-business-welcome-static/*.css']
+
+  # Set cache headers for optimization
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ['setmeta', '-h', 'Cache-Control:public,max-age=604800', 'gs://hot-business-welcome-static/guides/video/*.mp4']
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 600s

@@ -18,6 +18,11 @@ body{
     min-height:100vh;
 }
 
+:root{
+
+    --search-sticky-top:0px;
+}
+
 /* STICKY TOP */
 
 .top-banner{
@@ -45,6 +50,8 @@ body{
     border-bottom:4px solid #d1006f;
 
     box-shadow:0 4px 20px rgba(0,0,0,0.1);
+
+    cursor:pointer;
 }
 
 .logo{
@@ -300,59 +307,14 @@ body{
     }
 
 }
-/* SEARCH */
-
-.search-bar-section{
-
-    position:sticky;
-
-    top:95px;
-
-    z-index:998;
-
-    background:#0f0f0f;
-
-    padding:20px;
-
-    display:flex;
-
-    justify-content:center;
-
-    align-items:center;
-
-    gap:12px;
-
-    border-bottom:1px solid #222;
-}
-
-.search-bar-section input{
-
-    width:100%;
-
-    max-width:550px;
-
-    background:#181818;
-
-    border:1px solid #333;
-
-    color:white;
-
-    padding:16px 20px;
-
-    border-radius:14px;
-
-    outline:none;
-
-    font-size:16px;
-}
-
  /* SEARCH */
 
 .search-bar-section{
 
+    position:-webkit-sticky;
     position:sticky;
 
-    top:92px;
+    top:var(--search-sticky-top);
 
     z-index:998;
 
@@ -426,6 +388,10 @@ body{
 .guide-steps li{
 
     margin-bottom:15px;
+
+    break-inside:avoid;
+
+    page-break-inside:avoid;
 }
 
 /* VIDEO */
@@ -434,7 +400,7 @@ body{
 
     width:100%;
 
-    max-width:850px;
+    max-width:540px;
 
     border-radius:18px;
 
@@ -447,4 +413,12 @@ body{
     margin-right:auto;
 
     margin-left:auto;
+}
+
+@media(max-width:768px){
+
+    .guide-video{
+
+        max-width:100%;
+    }
 }

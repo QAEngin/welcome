@@ -1,4 +1,71 @@
-let openedGuide = null;
+﻿let openedGuide = null;
+
+function updateSearchStickyOffset(){
+
+    const root = document.documentElement;
+
+    const topBanner =
+        document.querySelector(".top-banner");
+
+    const bannerHeight =
+        topBanner ? topBanner.offsetHeight : 0;
+
+    root.style.setProperty(
+        "--search-sticky-top",
+        `${bannerHeight}px`
+    );
+}
+
+window.addEventListener(
+    "load",
+    updateSearchStickyOffset
+);
+
+window.addEventListener(
+    "resize",
+    updateSearchStickyOffset
+);
+
+function goHome(){
+
+    const guideContent =
+        document.getElementById("guideContent");
+
+    if(guideContent){
+
+        guideContent.innerHTML = "";
+    }
+
+    openedGuide = null;
+
+    window.scrollTo({
+
+        top:0,
+
+        behavior:"smooth"
+    });
+}
+
+function bindTopBannerHome(){
+
+    const topBanner =
+        document.querySelector(".top-banner");
+
+    if(!topBanner){
+
+        return;
+    }
+
+    topBanner.addEventListener(
+        "click",
+        goHome
+    );
+}
+
+window.addEventListener(
+    "load",
+    bindTopBannerHome
+);
 
 /* GUIDES */
 
@@ -111,7 +178,7 @@ fax_number
 </ol>
 
 <button class="download-btn"
-onclick="generatePDF('מדריך-פקס')">
+onclick="openGuidePreview('Guide Preview')">
 
 הצגת מדריך PDF
 
@@ -142,7 +209,7 @@ sms: `
 </p>
 
 <button class="download-btn"
-onclick="generatePDF('מדריך-SMS')">
+onclick="openGuidePreview('Guide Preview')">
 
 הצגת מדריך PDF
 
@@ -193,7 +260,7 @@ https://hot.nimbusip.com/
 </p>
 
 <button class="download-btn"
-onclick="generatePDF('הקלטות-שיחות')">
+onclick="openGuidePreview('Guide Preview')">
 
 הצגת מדריך PDF
 
@@ -210,6 +277,21 @@ yealink: `
 <h2>
 מדריך כללי למשתמשי Yealink
 </h2>
+
+<!-- PDF -->
+
+<div class="sub-guide">
+
+<h3>
+מדריך מלא למשתמש
+</h3>
+
+<iframe
+class="pdf-viewer"
+src="guides/manual-centrix.pdf">
+</iframe>
+
+</div>
 
 <!-- A -->
 
@@ -298,21 +380,6 @@ type="video/mp4">
 
 </div>
 
-<!-- PDF -->
-
-<div class="sub-guide">
-
-<h3>
-מדריך מלא למשתמש
-</h3>
-
-<iframe
-class="pdf-viewer"
-src="guides/manual-centrix.pdf">
-</iframe>
-
-</div>
-
 </div>
 
 `
@@ -385,9 +452,9 @@ function searchGuides(){
 
 }
 
-/* PDF */
+/* GUIDE PREVIEW */
 
-function generatePDF(fileName){
+function openGuidePreview(title){
 
     const element =
         document.getElementById("pdf-content");
@@ -397,30 +464,113 @@ function generatePDF(fileName){
         return;
     }
 
-    const options = {
+    const previewWindow =
+        window.open("", "_blank");
 
-        margin:0.5,
+    if(!previewWindow){
 
-        filename:fileName + '.pdf',
+        alert("Please allow popups to open the guide preview.");
+        return;
+    }
 
-        image:{
-            type:'jpeg',
-            quality:1
-        },
+    const baseHref =
+        window.location.href.slice(
+            0,
+            window.location.href.lastIndexOf("/") + 1
+        );
 
-        html2canvas:{
-            scale:2
-        },
+    const doc =
+        previewWindow.document;
 
-        jsPDF:{
-            unit:'in',
-            format:'a4',
-            orientation:'portrait'
+    doc.open();
+    doc.write("<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title></title></head><body></body></html>");
+    doc.close();
+
+    doc.documentElement.lang = "he";
+    doc.documentElement.dir = "rtl";
+    doc.title = title;
+
+    const base =
+        doc.createElement("base");
+
+    base.href = baseHref;
+    doc.head.appendChild(base);
+
+    const style =
+        doc.createElement("style");
+
+    style.textContent =
+        "*{box-sizing:border-box}" +
+        "body{margin:0;background:#0f0f0f;color:#fff;font-family:Arial}" +
+        ".action-bar{position:sticky;top:0;z-index:10;background:#151515;border-bottom:1px solid #2a2a2a;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;flex-wrap:wrap}" +
+        ".action-btn{background:#d1006f;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer}" +
+        ".guide-wrap{max-width:900px;margin:0 auto;padding:18px}" +
+        ".guide-box{background:#181818;border:1px solid #2b2b2b;border-radius:16px;padding:22px;line-height:1.9}" +
+        ".guide-box h2,.guide-box h3{color:#ff1493}" +
+        ".guide-box a{color:#fff}" +
+        ".guide-box img,.guide-box video,.guide-box iframe{max-width:100%;display:block;margin:12px auto;border-radius:12px}" +
+        ".guide-box video{max-width:540px}" +
+        ".download-btn{display:none !important}" +
+        "@media (max-width:768px){.guide-wrap{padding:12px}.guide-box{padding:16px}.guide-box video{max-width:100%}}";
+
+    doc.head.appendChild(style);
+
+    const actionBar =
+        doc.createElement("div");
+
+    actionBar.className =
+        "action-bar";
+
+    const shareBtn =
+        doc.createElement("button");
+
+    shareBtn.className = "action-btn";
+    shareBtn.textContent = "Share";
+    shareBtn.addEventListener("click", () => {
+
+        if(previewWindow.navigator.share){
+
+            previewWindow.navigator
+                .share({
+                    title: doc.title,
+                    text: doc.title,
+                    url: previewWindow.location.href
+                })
+                .catch(() => {});
+
+            return;
         }
-    };
 
-    html2pdf()
-        .set(options)
-        .from(element)
-        .save();
+        previewWindow.alert(
+            "Direct share is not supported in this browser."
+        );
+    });
+
+    const printBtn =
+        doc.createElement("button");
+
+    printBtn.className = "action-btn";
+    printBtn.textContent = "Print / Save PDF";
+    printBtn.addEventListener("click", () => {
+
+        previewWindow.print();
+    });
+
+    actionBar.appendChild(shareBtn);
+    actionBar.appendChild(printBtn);
+
+    const wrapper =
+        doc.createElement("main");
+
+    wrapper.className = "guide-wrap";
+
+    const clonedGuide =
+        element.cloneNode(true);
+
+    wrapper.appendChild(clonedGuide);
+
+    doc.body.appendChild(actionBar);
+    doc.body.appendChild(wrapper);
 }
+
+

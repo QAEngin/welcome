@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Panel</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+.admin{
+    padding:30px;
+}
+
+textarea{
+    width:100%;
+    height:300px;
+    padding:20px;
+    margin-top:20px;
+}
+
+button{
+    padding:15px 25px;
+    border:none;
+    background:#111;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="admin">
+
+<h1>ניהול מדריכים</h1>
+
+<select id="guideSelect">
+    <option value="fax">מייל 2 פקס</option>
+    <option value="sms">SMS</option>
+    <option value="recordings">הקלטות</option>
+</select>
+
+<textarea id="editor"></textarea>
+
+<br><br>
+
+<button onclick="saveGuide()">
+שמור שינויים
+</button>
+
+</div>
+
+<script src="admin.js"></script>
+
+</body>
+</html>

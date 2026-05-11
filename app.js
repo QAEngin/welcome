@@ -48,6 +48,39 @@ function clearActiveCards(){
     });
 }
 
+function clearSearchResults(){
+
+    const resultsContainer =
+        document.getElementById("guideSearchResults");
+
+    if(!resultsContainer){
+
+        return;
+    }
+
+    resultsContainer.innerHTML = "";
+    resultsContainer.classList.remove("active");
+}
+
+function resetSearchState(){
+
+    const searchInput =
+        document.getElementById("guideSearch");
+
+    if(searchInput){
+
+        searchInput.value = "";
+    }
+
+    document.querySelectorAll(".card").forEach(card => {
+
+        card.style.display = "";
+
+    });
+
+    clearSearchResults();
+}
+
 function goHome(){
 
     const guideContent =
@@ -60,6 +93,7 @@ function goHome(){
 
     openedGuide = null;
     clearActiveCards();
+    resetSearchState();
 
     window.scrollTo({
 
@@ -81,9 +115,14 @@ function bindTopBannerHome(){
 
     topBanner.addEventListener("click", event => {
 
-        if(event.target.closest("a")){
+        if(event.target.closest(".nav-support-btn, .nav-link")){
 
             return;
+        }
+
+        if(event.target.closest(".nav-logo")){
+
+            event.preventDefault();
         }
 
         goHome();
@@ -401,6 +440,360 @@ type="video/mp4">
 
 };
 
+function getGuideTypeFromCard(card){
+
+    const action =
+        card.getAttribute("onclick") || "";
+
+    const match =
+        action.match(/toggleGuide\('([^']+)'\)/);
+
+    return match ? match[1] : "";
+}
+
+function getPlainTextFromHtml(html){
+
+    const template =
+        document.createElement("template");
+
+    template.innerHTML =
+        html;
+
+    return template.content.textContent || "";
+}
+
+function normalizeSearchText(text){
+
+    return (text || "")
+        .toString()
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function getSearchSnippet(text, query){
+
+    const cleanText =
+        (text || "").replace(/\s+/g, " ").trim();
+
+    if(!cleanText){
+
+        return "";
+    }
+
+    const normalizedText =
+        cleanText.toLowerCase();
+
+    const index =
+        normalizedText.indexOf(query);
+
+    if(index === -1){
+
+        return cleanText.slice(0, 110);
+    }
+
+    const start =
+        Math.max(0, index - 45);
+
+    const end =
+        Math.min(cleanText.length, index + query.length + 65);
+
+    const prefix =
+        start > 0 ? "... " : "";
+
+    const suffix =
+        end < cleanText.length ? " ..." : "";
+
+    return `${prefix}${cleanText.slice(start, end)}${suffix}`;
+}
+
+function getGuideSearchItems(){
+
+    return Array.from(document.querySelectorAll(".card"))
+        .map(card => {
+
+            const type =
+                getGuideTypeFromCard(card);
+
+            const title =
+                card.querySelector(".card-title")?.textContent.trim() || card.textContent.trim();
+
+            const cardText =
+                card.textContent || "";
+
+            const guideText =
+                getPlainTextFromHtml(guides[type] || "");
+
+            return {
+                type,
+                title,
+                card,
+                guideText,
+                searchText:normalizeSearchText(`${title} ${cardText} ${guideText}`)
+            };
+
+        })
+        .filter(item => item.type);
+}
+
+function renderSearchResults(results, query){
+
+    const resultsContainer =
+        document.getElementById("guideSearchResults");
+
+    if(!resultsContainer){
+
+        return;
+    }
+
+    resultsContainer.innerHTML = "";
+    resultsContainer.classList.toggle("active", results.length > 0);
+
+    results.forEach(item => {
+
+        const resultButton =
+            document.createElement("button");
+
+        resultButton.type = "button";
+        resultButton.className = "search-result-link";
+        resultButton.addEventListener("click", () => {
+
+            clearSearchResults();
+
+            if(openedGuide === item.type){
+
+                document.getElementById("guideContent")?.scrollIntoView({
+
+                    behavior:"smooth",
+
+                    block:"start"
+                });
+
+                return;
+            }
+
+            toggleGuide(item.type);
+
+        });
+
+        const title =
+            document.createElement("span");
+
+        title.className = "search-result-title";
+        title.textContent = item.title;
+
+        const snippet =
+            document.createElement("span");
+
+        snippet.className = "search-result-snippet";
+        snippet.textContent =
+            getSearchSnippet(item.guideText || item.card.textContent, query);
+
+        resultButton.appendChild(title);
+        resultButton.appendChild(snippet);
+
+        resultsContainer.appendChild(resultButton);
+
+    });
+}
+
+function getFeatureLookupMarkup(){
+
+    return `
+
+<div class="guide-box feature-lookup-card">
+
+<h2>
+שירותי פיצ'רים שלי
+</h2>
+
+<p class="guide-intro">
+לבדיקת פיצ'רים קיימים במרכזייה, הזינו מספר ח.פ של הלקוח.
+</p>
+
+<div class="feature-lookup-form">
+
+<label for="businessFeatureId">
+מספר ח.פ
+</label>
+
+<div class="feature-lookup-row">
+
+<input
+id="businessFeatureId"
+class="feature-lookup-input"
+type="text"
+inputmode="numeric"
+autocomplete="off"
+placeholder="לדוגמה: 514123456"
+oninput="updateFeatureCheckButton()">
+
+<button
+id="featureCheckBtn"
+class="download-btn feature-check-btn"
+type="button"
+onclick="handleFeatureLookupCheck()"
+disabled>
+בדוק
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+}
+
+function showFeatureLookup(){
+
+    const guideContent =
+        document.getElementById("guideContent");
+
+    if(!guideContent){
+
+        return;
+    }
+
+    if(openedGuide === "featureLookup"){
+
+        guideContent.scrollIntoView({
+
+            behavior:"smooth",
+
+            block:"start"
+        });
+
+        return;
+    }
+
+    openedGuide = "featureLookup";
+    clearActiveCards();
+    clearSearchResults();
+
+    guideContent.innerHTML =
+        getFeatureLookupMarkup();
+
+    guideContent.scrollIntoView({
+
+        behavior:"smooth",
+
+        block:"start"
+    });
+}
+
+function updateFeatureCheckButton(){
+
+    const input =
+        document.getElementById("businessFeatureId");
+
+    const button =
+        document.getElementById("featureCheckBtn");
+
+    if(!input || !button){
+
+        return;
+    }
+
+    button.disabled =
+        input.value.trim().length === 0;
+}
+
+function handleFeatureLookupCheck(){
+
+    const input =
+        document.getElementById("businessFeatureId");
+
+    const button =
+        document.getElementById("featureCheckBtn");
+
+    if(!input || !button || !input.value.trim()){
+
+        return;
+    }
+
+    button.disabled = true;
+    button.classList.add("loading");
+    button.dataset.defaultText =
+        button.dataset.defaultText || button.textContent.trim();
+    button.textContent = "בודק...";
+
+    window.setTimeout(() => {
+
+        button.classList.remove("loading");
+        button.textContent =
+            button.dataset.defaultText || "בדוק";
+        button.disabled =
+            input.value.trim().length === 0;
+
+        showFeatureSupportPopup();
+
+    }, 1400);
+}
+
+function closeFeatureSupportPopup(){
+
+    const popup =
+        document.getElementById("featureSupportPopup");
+
+    if(popup){
+
+        popup.remove();
+    }
+}
+
+function showFeatureSupportPopup(){
+
+    closeFeatureSupportPopup();
+
+    const popup =
+        document.createElement("div");
+
+    popup.id = "featureSupportPopup";
+    popup.className = "support-popup-backdrop";
+    popup.setAttribute("role", "dialog");
+    popup.setAttribute("aria-modal", "true");
+    popup.setAttribute("aria-labelledby", "featureSupportTitle");
+
+    popup.innerHTML = `
+        <div class="support-popup">
+            <button
+                class="support-popup-close"
+                type="button"
+                aria-label="סגירה"
+                onclick="closeFeatureSupportPopup()">
+                ×
+            </button>
+            <div class="support-popup-icon">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+            </div>
+            <h2 id="featureSupportTitle">לא נמצאו פרטי שירות</h2>
+            <p>
+                לא הצלחנו לזהות את פירטי שירות לפי ח.פ שהקשת נא ליצור קשר מול התמיכה לקבלת שירות
+            </p>
+            <a
+                class="support-popup-whatsapp"
+                href="https://wa.me/972778066666"
+                target="_blank"
+                rel="noopener">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                יצירת קשר עם התמיכה
+            </a>
+        </div>
+    `;
+
+    popup.addEventListener("click", event => {
+
+        if(event.target === popup){
+
+            closeFeatureSupportPopup();
+        }
+    });
+
+    document.body.appendChild(popup);
+}
+
 function toggleGuide(type){
 
     const guideContent =
@@ -463,26 +856,35 @@ function searchGuides(){
     }
 
     const value =
-        searchInput.value.toLowerCase();
+        normalizeSearchText(searchInput.value);
 
-    const cards =
-        document.querySelectorAll(".card");
+    const searchItems =
+        getGuideSearchItems();
 
-    cards.forEach(card => {
+    if(!value){
 
-        const text =
-            card.innerText.toLowerCase();
+        searchItems.forEach(item => {
 
-        if(text.includes(value)){
+            item.card.style.display = "";
 
-            card.style.display = "";
+        });
 
-        }else{
+        renderSearchResults([], value);
 
-            card.style.display = "none";
-        }
+        return;
+    }
+
+    const matches =
+        searchItems.filter(item => item.searchText.includes(value));
+
+    searchItems.forEach(item => {
+
+        item.card.style.display =
+            matches.includes(item) ? "" : "none";
 
     });
+
+    renderSearchResults(matches, value);
 }
 
 function openGuidePreview(title){

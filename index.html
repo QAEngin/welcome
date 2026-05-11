@@ -44,7 +44,7 @@
                 </p>
             </div>
 
-            <div class="hero-visual" aria-hidden="true">
+            <div class="hero-visual">
                 <div class="brand-card">
                     <img src="assets/logo.png" alt="" class="brand-card-logo">
                     <div class="brand-card-content">
@@ -56,6 +56,9 @@
                         <span><i class="fa-solid fa-message"></i> SMS</span>
                         <span><i class="fa-solid fa-phone-volume"></i> הקלטות</span>
                     </div>
+                    <button class="brand-feature-btn" type="button" onclick="showFeatureLookup()">
+                        שירותי פיצ'רים שלי
+                    </button>
                 </div>
             </div>
         </div>
@@ -77,6 +80,11 @@
                         placeholder="חיפוש לפי שירות, מדריך או נושא..."
                         autocomplete="off"
                         oninput="searchGuides()">
+                </div>
+                <div
+                    class="search-results"
+                    id="guideSearchResults"
+                    aria-live="polite">
                 </div>
             </div>
         </section>

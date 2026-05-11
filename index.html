@@ -7,53 +7,81 @@
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script defer src="app.js"></script>
 </head>
 
 <body>
     <header class="top-banner" aria-label="HOT Business">
-        <img src="assets/logo.png" class="logo" alt="HOT Business">
+        <nav class="banner-nav">
+            <a href="#top" class="nav-logo" aria-label="HOT Business דף הבית">
+                <img src="assets/logo.png" class="logo" alt="HOT Business">
+            </a>
 
-        <div class="banner-text">
-            <p class="eyebrow">מרכז ידע ללקוחות טלפוניה עסקית</p>
-            <h1>ברוכים הבאים לשירותי HOT Business</h1>
-            <p>כל המדריכים, ההסברים והקישורים להפעלת השירותים שרכשתם במקום אחד.</p>
-        </div>
+            <div class="nav-center" aria-label="ניווט">
+                <a href="#services" class="nav-link">שירותים</a>
+                <a href="#search" class="nav-link">חיפוש</a>
+            </div>
+
+            <a href="https://wa.me/972778066666" target="_blank" rel="noopener" class="nav-support-btn">
+                <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                <span>תמיכה</span>
+            </a>
+        </nav>
     </header>
 
-    <main>
-        <section class="welcome-panel" aria-labelledby="welcomeTitle">
-            <div class="welcome-copy">
-                <h2 id="welcomeTitle">מתחילים להשתמש בשירותים שלכם</h2>
-                <p>
-                    בחרו את השירות שחובר לעסק, פתחו את המדריך וקבלו הסבר קצר וברור להפעלה,
-                    צפייה בדוחות, שימוש בטלפונים וקבלת תמיכה.
+    <section class="hero-section" id="top" aria-labelledby="heroTitle">
+        <div class="hero-content">
+            <div class="hero-text">
+                <p class="hero-eyebrow">מרכז ידע עסקי</p>
+                <h1 class="hero-title" id="heroTitle">כל מה שצריך לדעת על שירותי HOT Business</h1>
+                <p class="hero-subtitle">
+                    מדריכים, הסברים וקישורים להפעלת שירותי הטלפוניה שרכשתם: פקס מהמייל,
+                    SMS עסקי, הקלטות שיחות וטלפוני Yealink.
                 </p>
             </div>
 
-            <div class="quick-support" aria-label="תמיכה מהירה">
-                <span>צריכים עזרה?</span>
-                <a href="https://wa.me/972778066666" target="_blank" rel="noopener">
-                    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
-                    תמיכה ב-WhatsApp
-                </a>
+            <div class="hero-visual" aria-hidden="true">
+                <div class="brand-card">
+                    <img src="assets/logo.png" alt="" class="brand-card-logo">
+                    <div class="brand-card-content">
+                        <span>WELCOME</span>
+                        <strong>מרכז שירותים ללקוח</strong>
+                    </div>
+                    <div class="brand-service-list">
+                        <span><i class="fa-solid fa-fax"></i> פקס</span>
+                        <span><i class="fa-solid fa-message"></i> SMS</span>
+                        <span><i class="fa-solid fa-phone-volume"></i> הקלטות</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-scroll-hint">
+            <span>גלול למטה</span>
+            <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+        </div>
+    </section>
+
+    <main>
+        <section class="search-bar-section" id="search" aria-label="חיפוש מדריכים">
+            <div class="search-container">
+                <div class="search-field">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input
+                        type="search"
+                        id="guideSearch"
+                        placeholder="חיפוש לפי שירות, מדריך או נושא..."
+                        autocomplete="off"
+                        oninput="searchGuides()">
+                </div>
             </div>
         </section>
 
-        <section class="search-bar-section" aria-label="חיפוש מדריכים">
-            <div class="search-field">
-                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                <input
-                    type="search"
-                    id="guideSearch"
-                    placeholder="חיפוש לפי שירות, מדריך או נושא..."
-                    autocomplete="off"
-                    oninput="searchGuides()">
-            </div>
-        </section>
-
-        <section class="features" id="featuresSection" aria-label="שירותים ומדריכים">
+        <section class="features" id="services" aria-label="שירותים ומדריכים">
             <button class="card" type="button" onclick="toggleGuide('fax')">
                 <span class="card-icon">
                     <i class="fa-solid fa-fax" aria-hidden="true"></i>

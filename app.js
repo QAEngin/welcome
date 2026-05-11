@@ -79,10 +79,15 @@ function bindTopBannerHome(){
         return;
     }
 
-    topBanner.addEventListener(
-        "click",
-        goHome
-    );
+    topBanner.addEventListener("click", event => {
+
+        if(event.target.closest("a")){
+
+            return;
+        }
+
+        goHome();
+    });
 }
 
 window.addEventListener(

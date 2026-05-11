@@ -1,149 +1,99 @@
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
-<!-- Auto-deployment test - deployed at $(date) -->
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOT Business - מרכז ידע ללקוח</title>
 
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
-    <title>HOT Business</title>
-
-    <!-- CSS -->
-
-    <link rel="stylesheet"
-        href="style.css">
-
-    <!-- ICONS -->
-
-    <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <!-- PDF -->
-
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-
     <script defer src="app.js"></script>
-
 </head>
 
 <body>
+    <header class="top-banner" aria-label="HOT Business">
+        <img src="assets/logo.png" class="logo" alt="HOT Business">
 
-    <!-- TOP -->
-
-    <!-- TOP -->
-
-<section class="top-banner">
-
-    <img src="assets/logo.png"
-        class="logo">
-
-    <div class="banner-text">
-
-        <h1>
-            ברוכים הבאים לשירותי HOT Business
-        </h1>
-
-        <p>
-            מדריכי שירות ופיצ'רים למרכזייה העסקית
-        </p>
-
-    </div>
-
-</section>
-
-<!-- SEARCH -->
-
-<section class="search-bar-section">
-
-    <input
-    type="text"
-    id="guideSearch"
-    placeholder="חיפוש מדריך או נושא..."
-    onkeyup="searchGuides()">
-
-    <i class="fa-solid fa-magnifying-glass"></i>
-
-</section>
-
-    <!-- FEATURES -->
-
-    <section class="features"
-        id="featuresSection">
-
-        <div class="card"
-            onclick="toggleGuide('fax')">
-
-            <i class="fa-solid fa-fax"></i>
-
-            <h3>מייל 2 פקס</h3>
-
-            <p>
-                שליחת פקסים מהמייל
-            </p>
-
+        <div class="banner-text">
+            <p class="eyebrow">מרכז ידע ללקוחות טלפוניה עסקית</p>
+            <h1>ברוכים הבאים לשירותי HOT Business</h1>
+            <p>כל המדריכים, ההסברים והקישורים להפעלת השירותים שרכשתם במקום אחד.</p>
         </div>
+    </header>
 
-        <div class="card"
-            onclick="toggleGuide('sms')">
+    <main>
+        <section class="welcome-panel" aria-labelledby="welcomeTitle">
+            <div class="welcome-copy">
+                <h2 id="welcomeTitle">מתחילים להשתמש בשירותים שלכם</h2>
+                <p>
+                    בחרו את השירות שחובר לעסק, פתחו את המדריך וקבלו הסבר קצר וברור להפעלה,
+                    צפייה בדוחות, שימוש בטלפונים וקבלת תמיכה.
+                </p>
+            </div>
 
-            <i class="fa-solid fa-message"></i>
+            <div class="quick-support" aria-label="תמיכה מהירה">
+                <span>צריכים עזרה?</span>
+                <a href="https://wa.me/972778066666" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+                    תמיכה ב-WhatsApp
+                </a>
+            </div>
+        </section>
 
-            <h3>SMS</h3>
+        <section class="search-bar-section" aria-label="חיפוש מדריכים">
+            <div class="search-field">
+                <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                <input
+                    type="search"
+                    id="guideSearch"
+                    placeholder="חיפוש לפי שירות, מדריך או נושא..."
+                    autocomplete="off"
+                    oninput="searchGuides()">
+            </div>
+        </section>
 
-            <p>
-                הודעות עסקיות
-            </p>
+        <section class="features" id="featuresSection" aria-label="שירותים ומדריכים">
+            <button class="card" type="button" onclick="toggleGuide('fax')">
+                <span class="card-icon">
+                    <i class="fa-solid fa-fax" aria-hidden="true"></i>
+                </span>
+                <span class="card-title">מייל 2 פקס</span>
+                <span class="card-text">שליחת פקסים ישירות מתיבת המייל וקבלת אישור שליחה.</span>
+            </button>
 
-        </div>
+            <button class="card" type="button" onclick="toggleGuide('sms')">
+                <span class="card-icon">
+                    <i class="fa-solid fa-message" aria-hidden="true"></i>
+                </span>
+                <span class="card-title">SMS עסקי</span>
+                <span class="card-text">הגדרת הודעות שירות ושם שולח לעסק.</span>
+            </button>
 
-        <div class="card"
-            onclick="toggleGuide('recordings')">
+            <button class="card" type="button" onclick="toggleGuide('recordings')">
+                <span class="card-icon">
+                    <i class="fa-solid fa-phone-volume" aria-hidden="true"></i>
+                </span>
+                <span class="card-title">הקלטות שיחות</span>
+                <span class="card-text">גישה לממשק ההקלטות, דוחות וחיפוש שיחות.</span>
+            </button>
 
-            <i class="fa-solid fa-phone-volume"></i>
+            <button class="card" type="button" onclick="toggleGuide('yealink')">
+                <span class="card-icon">
+                    <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                </span>
+                <span class="card-title">טלפוני Yealink</span>
+                <span class="card-text">מדריך משתמש, פתרון תקלות וסרטוני הדרכה.</span>
+            </button>
+        </section>
 
-            <h3>הקלטות שיחות</h3>
+        <section class="guide-container" aria-live="polite">
+            <div id="guideContent"></div>
+        </section>
+    </main>
 
-            <p>
-                גישה להקלטות ודוחות
-            </p>
-
-        </div>
-
-        <div class="card"
-            onclick="toggleGuide('yealink')">
-
-            <i class="fa-solid fa-phone"></i>
-
-            <h3>מדריך Yealink</h3>
-
-            <p>
-                מדריך למשתמש
-            </p>
-
-        </div>
-
-    </section>
-
-    <!-- GUIDE -->
-
-    <section class="guide-container">
-
-        <div id="guideContent"></div>
-
-    </section>
-
-    <!-- FLOATING WHATSAPP -->
-
-    <a class="floating-whatsapp"
-        href="https://wa.me/972778066666"
-        target="_blank">
-
-        <i class="fa-brands fa-whatsapp"></i>
-
+    <a class="floating-whatsapp" href="https://wa.me/972778066666" target="_blank" rel="noopener" aria-label="תמיכה ב-WhatsApp">
+        <i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
     </a>
-
 </body>
-
 </html>

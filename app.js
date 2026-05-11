@@ -1,4 +1,13 @@
-﻿let openedGuide = null;
+let openedGuide = null;
+
+const customerLookupConfig = {
+    enabled: false,
+    crmProvider: "future-crm",
+    requiredFields: [
+        "businessId",
+        "businessPhone"
+    ]
+};
 
 function updateSearchStickyOffset(){
 
@@ -26,6 +35,19 @@ window.addEventListener(
     updateSearchStickyOffset
 );
 
+function clearActiveCards(){
+
+    const cards =
+        document.querySelectorAll(".card");
+
+    cards.forEach(card => {
+
+        card.classList.remove("active");
+        card.removeAttribute("aria-pressed");
+
+    });
+}
+
 function goHome(){
 
     const guideContent =
@@ -37,6 +59,7 @@ function goHome(){
     }
 
     openedGuide = null;
+    clearActiveCards();
 
     window.scrollTo({
 
@@ -67,8 +90,6 @@ window.addEventListener(
     bindTopBannerHome
 );
 
-/* GUIDES */
-
 const guides = {
 
 fax: `
@@ -79,21 +100,18 @@ fax: `
 מדריך שליחת פקס מהמייל
 </h2>
 
-<p style="margin-bottom:25px;">
-אנו שמחים לעדכן כי צורפת לשירות מייל 2 פקס.
+<p class="guide-intro">
+שירות מייל 2 פקס מאפשר לשלוח פקס ישירות מתיבת המייל של העסק, ללא צורך במכשיר פקס פיזי.
 </p>
 
 <ol class="guide-steps">
 
 <li>
-
-פתח את תיבת המייל שלך.
-
+פתחו את תיבת המייל שלכם.
 </li>
 
 <li>
-
-בשדה TO יש להזין את כתובת הפקס בצורה הבאה:
+בשדה הנמען (TO) יש להזין את כתובת הפקס במבנה הבא:
 
 <br><br>
 
@@ -104,18 +122,14 @@ fax_number@fax.tc
 </li>
 
 <li>
-
 במקום:
 <b>
 fax_number
 </b>
-
-יש להזין את מספר הפקס אליו תרצה לשלוח.
-
+יש להזין את מספר הפקס שאליו תרצו לשלוח.
 </li>
 
 <li>
-
 לדוגמה:
 
 <br><br>
@@ -126,59 +140,39 @@ fax_number
 
 <br><br>
 
-שימו לב:
-המספר חייב להופיע בצד שמאל של הסימן @
-
+שימו לב: המספר חייב להופיע בצד שמאל של הסימן @.
 </li>
 
 <li>
-
-בשדה SUBJECT ניתן לרשום מידע לתיעוד עצמי בלבד.
-
-<br>
-
-הטקסט לא יישלח בפקס.
-
+בשדה הנושא (SUBJECT) ניתן לרשום מידע לתיעוד עצמי בלבד. הטקסט לא יישלח בפקס.
 </li>
 
 <li>
-
-בגוף המייל ניתן:
+בגוף המייל ניתן לכתוב טקסט חופשי או לצרף קובץ.
 
 <ul>
-
-<li>
-לכתוב טקסט חופשי
-</li>
-
-<li>
-או לצרף קובץ
-</li>
-
+<li>אם שולחים טקסט בלבד, הטקסט יישלח בפקס.</li>
+<li>אם מצרפים קובץ, הקובץ יישלח בפקס.</li>
 </ul>
 
-רק אחד מהם יישלח.
-
 </li>
 
 <li>
-
-מומלץ לצרף קובץ PDF,
-אך ניתן גם לשלוח פורמטים נוספים.
-
+מומלץ לצרף קובץ PDF, אך ניתן לשלוח גם פורמטים נוספים.
 </li>
 
 <li>
-
-לאחר מספר דקות יתקבל מייל חוזר
-עם אישור האם הפקס נשלח בהצלחה.
-
+לאחר מספר דקות יתקבל מייל חוזר עם סטטוס השליחה.
 </li>
 
 </ol>
 
+<p class="guide-note">
+מומלץ לוודא שמספר הפקס תקין לפני השליחה, כולל קידומת אזורית מלאה.
+</p>
+
 <button class="download-btn"
-onclick="openGuidePreview('Guide Preview')">
+onclick="openGuidePreview('מדריך מייל 2 פקס')">
 
 הצגת מדריך PDF
 
@@ -196,20 +190,36 @@ sms: `
 שירות SMS
 </h2>
 
-<p>
-ניתן לשנות את תוכן ההודעה בכל שלב.
+<p class="guide-intro">
+שירות SMS עסקי מאפשר לשלוח הודעות שירות ללקוחות העסק עם נוסח מוגדר ושם שולח.
 </p>
 
-<p>
-הודעת שירות עד 160 תווים.
-</p>
+<ol class="guide-steps">
 
-<p>
-ניתן להגדיר שם עסק באנגלית בלבד עד 11 תווים.
+<li>
+ניתן לעדכן את תוכן ההודעה בהתאם לצורך העסקי.
+</li>
+
+<li>
+הודעת שירות סטנדרטית מוגבלת עד 160 תווים.
+</li>
+
+<li>
+שם השולח יכול להיות באנגלית בלבד ועד 11 תווים.
+</li>
+
+<li>
+כדאי לנסח הודעה קצרה, ברורה וללא מידע רגיש שאינו נדרש.
+</li>
+
+</ol>
+
+<p class="guide-note">
+אם נדרש שינוי בנוסח ההודעה או בשם השולח, יש לפנות לתמיכה.
 </p>
 
 <button class="download-btn"
-onclick="openGuidePreview('Guide Preview')">
+onclick="openGuidePreview('מדריך שירות SMS')">
 
 הצגת מדריך PDF
 
@@ -227,16 +237,22 @@ recordings: `
 הקלטות שיחות ודוחות
 </h2>
 
+<p class="guide-intro">
+ממשק ההקלטות מאפשר לצפות בשיחות מוקלטות, לאתר שיחות לפי פרטים רלוונטיים ולהפיק מידע תפעולי עבור העסק.
+</p>
+
 <img src="assets/Rec.png"
-class="recording-image">
+class="recording-image"
+alt="מסך מערכת הקלטות שיחות">
 
 <p>
-לקבלת גישה לממשק יש ליצור קשר ב-WhatsApp:
+לקבלת גישה לממשק או עזרה בהתחברות יש ליצור קשר ב-WhatsApp:
 </p>
 
 <a class="whatsapp-access"
 href="https://wa.me/972778066666"
-target="_blank">
+target="_blank"
+rel="noopener">
 
 <i class="fa-brands fa-whatsapp"></i>
 
@@ -244,23 +260,24 @@ target="_blank">
 
 </a>
 
-<h3 style="margin-top:35px;">
-לינק למערכת:
+<h3>
+כניסה למערכת
 </h3>
 
 <p>
-
 <a href="https://hot.nimbusip.com/"
-target="_blank">
-
+target="_blank"
+rel="noopener">
 https://hot.nimbusip.com/
-
 </a>
+</p>
 
+<p class="guide-note">
+פרטי הכניסה למערכת ניתנים בהתאם להרשאות השירות שהוגדרו לעסק.
 </p>
 
 <button class="download-btn"
-onclick="openGuidePreview('Guide Preview')">
+onclick="openGuidePreview('מדריך הקלטות שיחות')">
 
 הצגת מדריך PDF
 
@@ -278,7 +295,9 @@ yealink: `
 מדריך כללי למשתמשי Yealink
 </h2>
 
-<!-- PDF -->
+<p class="guide-intro">
+כאן ניתן למצוא מדריך מלא לטלפוני Yealink, פעולות נפוצות וסרטוני הדרכה לשימוש במרכזייה.
+</p>
 
 <div class="sub-guide">
 
@@ -288,24 +307,20 @@ yealink: `
 
 <iframe
 class="pdf-viewer"
-src="guides/manual-centrix.pdf">
+src="guides/manual-centrix.pdf"
+title="מדריך מלא למשתמש Yealink">
 </iframe>
 
 </div>
-
-<!-- A -->
 
 <div class="sub-guide">
 
 <h3>
 A) טיפול ברעשים בשמע
-<p>
-W70B
-</p>
 </h3>
 
 <p>
-אם קיימים רעשים בשמע יש לבצע הפעלה מחדש דרך השפופרת לקו:
+אם קיימים רעשים בשמע בדגם W70B, יש לבצע הפעלה מחדש דרך השפופרת:
 </p>
 
 <ol class="guide-steps">
@@ -332,8 +347,7 @@ W70B
 </ol>
 
 <p>
-יש להמתין 2-4 דקות עד שהבסיס יעלה מחדש
-ויירשם למרכזייה.
+יש להמתין 2-4 דקות עד שהבסיס יעלה מחדש ויירשם למרכזייה.
 </p>
 
 <p>
@@ -341,8 +355,6 @@ W70B
 </p>
 
 </div>
-
-<!-- B -->
 
 <div class="sub-guide">
 
@@ -360,8 +372,6 @@ type="video/mp4">
 </video>
 
 </div>
-
-<!-- C -->
 
 <div class="sub-guide">
 
@@ -386,12 +396,17 @@ type="video/mp4">
 
 };
 
-/* TOGGLE GUIDE */
-
 function toggleGuide(type){
 
     const guideContent =
         document.getElementById("guideContent");
+
+    if(!guideContent || !guides[type]){
+
+        return;
+    }
+
+    clearActiveCards();
 
     if(openedGuide === type){
 
@@ -403,7 +418,7 @@ function toggleGuide(type){
 
             top:0,
 
-            behavior:'smooth'
+            behavior:"smooth"
         });
 
         return;
@@ -414,22 +429,36 @@ function toggleGuide(type){
     guideContent.innerHTML =
         guides[type];
 
-    window.scrollTo({
+    const activeCard =
+        document.querySelector(`[onclick="toggleGuide('${type}')"]`);
 
-        top:450,
+    if(activeCard){
 
-        behavior:'smooth'
+        activeCard.classList.add("active");
+        activeCard.setAttribute("aria-pressed", "true");
+
+    }
+
+    guideContent.scrollIntoView({
+
+        behavior:"smooth",
+
+        block:"start"
     });
 }
 
-/* SEARCH */
-
 function searchGuides(){
 
+    const searchInput =
+        document.getElementById("guideSearch");
+
+    if(!searchInput){
+
+        return;
+    }
+
     const value =
-        document.getElementById("guideSearch")
-        .value
-        .toLowerCase();
+        searchInput.value.toLowerCase();
 
     const cards =
         document.querySelectorAll(".card");
@@ -441,7 +470,7 @@ function searchGuides(){
 
         if(text.includes(value)){
 
-            card.style.display = "block";
+            card.style.display = "";
 
         }else{
 
@@ -449,10 +478,7 @@ function searchGuides(){
         }
 
     });
-
 }
-
-/* GUIDE PREVIEW */
 
 function openGuidePreview(title){
 
@@ -469,7 +495,7 @@ function openGuidePreview(title){
 
     if(!previewWindow){
 
-        alert("Please allow popups to open the guide preview.");
+        alert("יש לאפשר פתיחת חלונות קופצים כדי להציג את המדריך.");
         return;
     }
 
@@ -501,14 +527,15 @@ function openGuidePreview(title){
 
     style.textContent =
         "*{box-sizing:border-box}" +
-        "body{margin:0;background:#0f0f0f;color:#fff;font-family:Arial}" +
+        "body{margin:0;background:#0f0f0f;color:#fff;font-family:Arial;direction:rtl}" +
         ".action-bar{position:sticky;top:0;z-index:10;background:#151515;border-bottom:1px solid #2a2a2a;display:flex;gap:10px;justify-content:center;align-items:center;padding:12px;flex-wrap:wrap}" +
-        ".action-btn{background:#d1006f;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:15px;cursor:pointer}" +
+        ".action-btn{background:#d1006f;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:15px;cursor:pointer}" +
         ".guide-wrap{max-width:900px;margin:0 auto;padding:18px}" +
-        ".guide-box{background:#181818;border:1px solid #2b2b2b;border-radius:16px;padding:22px;line-height:1.9}" +
+        ".guide-box{background:#181818;border:1px solid #2b2b2b;border-radius:8px;padding:22px;line-height:1.9}" +
         ".guide-box h2,.guide-box h3{color:#ff1493}" +
         ".guide-box a{color:#fff}" +
-        ".guide-box img,.guide-box video,.guide-box iframe{max-width:100%;display:block;margin:12px auto;border-radius:12px}" +
+        ".guide-box img,.guide-box video,.guide-box iframe{max-width:100%;display:block;margin:12px auto;border-radius:8px}" +
+        ".guide-note{background:#111;border-right:4px solid #d1006f;border-radius:8px;padding:12px 14px}" +
         ".guide-box video{max-width:540px}" +
         ".download-btn{display:none !important}" +
         "@media (max-width:768px){.guide-wrap{padding:12px}.guide-box{padding:16px}.guide-box video{max-width:100%}}";
@@ -525,7 +552,7 @@ function openGuidePreview(title){
         doc.createElement("button");
 
     shareBtn.className = "action-btn";
-    shareBtn.textContent = "Share";
+    shareBtn.textContent = "שיתוף";
     shareBtn.addEventListener("click", () => {
 
         if(previewWindow.navigator.share){
@@ -542,7 +569,7 @@ function openGuidePreview(title){
         }
 
         previewWindow.alert(
-            "Direct share is not supported in this browser."
+            "שיתוף ישיר אינו נתמך בדפדפן הזה."
         );
     });
 
@@ -550,7 +577,7 @@ function openGuidePreview(title){
         doc.createElement("button");
 
     printBtn.className = "action-btn";
-    printBtn.textContent = "Print / Save PDF";
+    printBtn.textContent = "הדפסה / שמירה כ-PDF";
     printBtn.addEventListener("click", () => {
 
         previewWindow.print();
@@ -562,7 +589,8 @@ function openGuidePreview(title){
     const wrapper =
         doc.createElement("main");
 
-    wrapper.className = "guide-wrap";
+    wrapper.className =
+        "guide-wrap";
 
     const clonedGuide =
         element.cloneNode(true);
@@ -572,5 +600,3 @@ function openGuidePreview(title){
     doc.body.appendChild(actionBar);
     doc.body.appendChild(wrapper);
 }
-
-

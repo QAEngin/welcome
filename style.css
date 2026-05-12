@@ -434,7 +434,7 @@ a{
 
 .features{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:20px;
     width:min(1280px, calc(100% - 56px));
     margin:60px auto 0;
@@ -724,6 +724,17 @@ a{
     border-radius:12px;
     border:1px solid rgba(209,0,111,0.22);
     box-shadow:0 16px 48px rgba(209,0,111,0.14);
+}
+
+.guide-screenshot{
+    width:100%;
+    max-width:760px;
+    display:block;
+    margin:18px auto 6px;
+    border-radius:12px;
+    border:1px solid rgba(209,0,111,0.22);
+    background:#111111;
+    box-shadow:0 16px 44px rgba(0,0,0,0.28);
 }
 
 .download-btn{

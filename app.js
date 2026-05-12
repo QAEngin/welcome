@@ -331,6 +331,130 @@ onclick="openGuidePreview('מדריך הקלטות שיחות')">
 
 `,
 
+callForward: `
+
+<div class="guide-box">
+
+<h2>
+הפניית שיחה / עקוב אחרי
+</h2>
+
+<p class="guide-intro">
+מדריך להגדרת Call Forward במערכת Fusion PBX עבור משתמשי מובייל ומשתמשי דפדפן.
+</p>
+
+<div class="sub-guide">
+
+<h3>
+משתמשי מובייל
+</h3>
+
+<ol class="guide-steps">
+
+<li>
+התחברו למערכת המרכזייה באמצעות הקישור:
+<a href="https://hot.nimbusip.com/"
+target="_blank"
+rel="noopener">
+www.hot.nimbusip.com
+</a>
+</li>
+
+<li>
+הזינו את שם המשתמש והסיסמה שקיבלתם.
+</li>
+
+<li>
+לחצו על <b>Applications</b> וברשימה בחרו <b>Call Forward</b>.
+<img
+src="assets/forward_mob.jpg"
+class="guide-screenshot"
+alt="בחירת Call Forward במובייל">
+</li>
+
+<li>
+לחצו על השלוחה שעבורה רוצים לבצע עקוב אחרי.
+</li>
+
+<li>
+הפעילו את האפשרות הראשונה: <b>Call Forward</b>, בחרו <b>Enable</b> ולאחר מכן לחצו <b>Save</b>.
+<img
+src="assets/forward_mob1.jpg"
+class="guide-screenshot"
+alt="הפעלת Call Forward במובייל">
+</li>
+
+</ol>
+
+<p class="guide-note">
+לאחר שמירת ההגדרה ולחיצה על <b>Back</b>, אם הכל בוצע תקין, תראו את מספרי עקוב אחרי כמו בתמונה:
+</p>
+
+<img
+src="assets/forward_mob2.jpg"
+class="guide-screenshot"
+alt="מספרי עקוב אחרי לאחר שמירה במובייל">
+
+</div>
+
+<div class="sub-guide">
+
+<h3>
+משתמשי דפדפן
+</h3>
+
+<ol class="guide-steps">
+
+<li>
+התחברו למערכת המרכזייה באמצעות הקישור:
+<a href="https://hot.nimbusip.com/"
+target="_blank"
+rel="noopener">
+www.hot.nimbusip.com
+</a>
+</li>
+
+<li>
+הזינו את שם המשתמש והסיסמה שקיבלתם.
+</li>
+
+<li>
+לחצו על <b>Applications</b> וברשימה בחרו <b>Call Forward</b>.
+<img
+src="assets/forward_desk.jpg"
+class="guide-screenshot"
+alt="בחירת Call Forward בדפדפן">
+</li>
+
+<li>
+לחצו על השלוחה שעבורה רוצים לבצע עקוב אחרי.
+</li>
+
+<li>
+הפעילו את האפשרות הראשונה: <b>Call Forward</b>, בחרו <b>Enable</b> ולאחר מכן לחצו <b>Save</b>.
+<img
+src="assets/forward_desk1.jpg"
+class="guide-screenshot"
+alt="הפעלת Call Forward בדפדפן">
+</li>
+
+</ol>
+
+<p class="guide-note">
+לאחר שמירת ההגדרה ולחיצה על <b>Back</b>, אם הכל בוצע תקין, תראו את מספרי עקוב אחרי כמו בתמונה:
+</p>
+
+<img
+src="assets/forward_desk2.jpg"
+class="guide-screenshot"
+alt="מספרי עקוב אחרי לאחר שמירה בדפדפן">
+
+</div>
+
+</div>
+
+`,
+
 yealink: `
 
 <div class="guide-box">

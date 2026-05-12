@@ -601,23 +601,29 @@ function getFeatureLookupMarkup(){
 
     return `
 
-<div class="guide-box feature-lookup-card">
+<div class="feature-auth-layout">
 
-<h2>
-שירותי פיצ'רים שלי
+<section class="feature-auth-info" aria-labelledby="featureAuthTitle">
+
+<span>איזור אישי ללקוח</span>
+
+<h2 id="featureAuthTitle">
+בדיקת שירותים לפי ח.פ וטלפון ראשי
 </h2>
 
-<p class="guide-intro">
-לבדיקת פיצ'רים קיימים במרכזייה, הזינו מספר ח.פ של הלקוח.
+<p>
+הזינו את פרטי העסק כפי שהם מופיעים במערכת. לאחר אימות מול ה-CRM יוצגו השירותים הפעילים והפרטים שהוגדרו עבור העסק.
 </p>
+
+</section>
+
+<section class="feature-lookup-card" aria-label="אימות לקוח">
 
 <div class="feature-lookup-form">
 
 <label for="businessFeatureId">
-מספר ח.פ
+ח.פ / עוסק מורשה
 </label>
-
-<div class="feature-lookup-row">
 
 <input
 id="businessFeatureId"
@@ -628,18 +634,32 @@ autocomplete="off"
 placeholder="לדוגמה: 514123456"
 oninput="updateFeatureCheckButton()">
 
+<label for="businessMainPhone">
+מספר טלפון ראשי
+</label>
+
+<input
+id="businessMainPhone"
+class="feature-lookup-input"
+type="tel"
+inputmode="tel"
+autocomplete="tel"
+placeholder="לדוגמה: 03-1234567"
+oninput="updateFeatureCheckButton()">
+
 <button
 id="featureCheckBtn"
 class="download-btn feature-check-btn"
 type="button"
 onclick="handleFeatureLookupCheck()"
 disabled>
-בדוק
+<i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
+כניסה לאזור האישי
 </button>
 
 </div>
 
-</div>
+</section>
 
 </div>
 
@@ -685,30 +705,43 @@ function showFeatureLookup(){
 
 function updateFeatureCheckButton(){
 
-    const input =
+    const businessIdInput =
         document.getElementById("businessFeatureId");
+
+    const phoneInput =
+        document.getElementById("businessMainPhone");
 
     const button =
         document.getElementById("featureCheckBtn");
 
-    if(!input || !button){
+    if(!businessIdInput || !phoneInput || !button){
 
         return;
     }
 
     button.disabled =
-        input.value.trim().length === 0;
+        businessIdInput.value.trim().length === 0 ||
+        phoneInput.value.trim().length === 0;
 }
 
 function handleFeatureLookupCheck(){
 
-    const input =
+    const businessIdInput =
         document.getElementById("businessFeatureId");
+
+    const phoneInput =
+        document.getElementById("businessMainPhone");
 
     const button =
         document.getElementById("featureCheckBtn");
 
-    if(!input || !button || !input.value.trim()){
+    if(
+        !businessIdInput ||
+        !phoneInput ||
+        !button ||
+        !businessIdInput.value.trim() ||
+        !phoneInput.value.trim()
+    ){
 
         return;
     }
@@ -716,16 +749,17 @@ function handleFeatureLookupCheck(){
     button.disabled = true;
     button.classList.add("loading");
     button.dataset.defaultText =
-        button.dataset.defaultText || button.textContent.trim();
+        button.dataset.defaultText || button.innerHTML.trim();
     button.textContent = "בודק...";
 
     window.setTimeout(() => {
 
         button.classList.remove("loading");
-        button.textContent =
-            button.dataset.defaultText || "בדוק";
+        button.innerHTML =
+            button.dataset.defaultText || "כניסה לאזור האישי";
         button.disabled =
-            input.value.trim().length === 0;
+            businessIdInput.value.trim().length === 0 ||
+            phoneInput.value.trim().length === 0;
 
         showFeatureSupportPopup();
 

@@ -91,9 +91,13 @@ a{
 }
 
 .nav-link{
+    background:transparent;
+    border:0;
     color:#202020;
+    cursor:pointer;
     font-size:15px;
     font-weight:600;
+    padding:0;
     position:relative;
     transition:color 0.2s ease;
 }

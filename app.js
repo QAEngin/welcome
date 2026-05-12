@@ -340,7 +340,7 @@ callForward: `
 </h2>
 
 <p class="guide-intro">
-מדריך להגדרת Call Forward במערכת Fusion PBX עבור משתמשי מובייל ומשתמשי דפדפן.
+מדריך להגדרת Call Forward במערכת מרכזייה בענן עבור משתמשי מובייל ומשתמשי דפדפן.
 </p>
 
 <div class="sub-guide">

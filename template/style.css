@@ -260,6 +260,88 @@ cursor:pointer;
 background:#e8f7ff;
 }
 
+.sms-guide,
+.sms-lookup{
+margin-bottom:14px;
+}
+
+.guide-head{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:14px;
+flex-wrap:wrap;
+}
+
+.guide-head h2,
+.lookup-title{
+margin:0;
+font-size:18px;
+font-weight:700;
+}
+
+.guide-buttons{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+}
+
+.guide-step{
+height:36px;
+padding:0 12px;
+border:1px solid #d7d3c8;
+border-radius:18px;
+background:#fff;
+cursor:pointer;
+font-weight:700;
+color:#2f3a34;
+}
+
+.guide-step.active{
+background:#2a8f60;
+color:#fff;
+border-color:#2a8f60;
+}
+
+.guide-panel{
+margin-top:12px;
+padding:12px;
+border-radius:12px;
+background:#fff;
+border:1px solid #ddd7ca;
+line-height:1.65;
+}
+
+.lookup-row{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:wrap;
+margin-top:10px;
+}
+
+.lookup-result{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+min-height:34px;
+margin-top:10px;
+align-items:center;
+}
+
+.lookup-pill{
+padding:7px 12px;
+border-radius:18px;
+background:#fff;
+border:1px solid #d7d3c8;
+font-size:13px;
+}
+
+.lookup-missing{
+color:#c32424;
+font-weight:700;
+}
+
 @media (min-width: 981px){
   .wrap{
     max-width:1600px;

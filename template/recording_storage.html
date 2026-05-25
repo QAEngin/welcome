@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>איחסון הקלטות</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/nav.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="bot.css">
+  <link rel="stylesheet" href="service_queue.css?v=2">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="site-nav-inner">
+      <a class="brand" href="/home"><span class="brand-kicker">Support Suite</span><span class="brand-main">Services</span></a>
+      <button class="nav-toggle" type="button">Menu</button>
+      <div class="nav-links">
+        <a class="nav-link" href="/sms"><span class="nav-icon"><i class="fa-solid fa-comment-sms"></i></span><span class="nav-label">SMS</span></a>
+        <a class="nav-link" href="/bot"><span class="nav-icon"><i class="fa-solid fa-robot"></i></span><span class="nav-label">Bot</span></a>
+        <a class="nav-link" href="/f2m"><span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span><span class="nav-label">F2M</span></a>
+        <a class="nav-link active" href="/recording-storage"><span class="nav-icon"><i class="fa-solid fa-database"></i></span><span class="nav-label">אחסון</span></a>
+        <a class="nav-link" href="/human-service"><span class="nav-icon"><i class="fa-solid fa-headset"></i></span><span class="nav-label">מוקד</span></a>
+        <a class="nav-link" href="/record"><span class="nav-icon"><i class="fa-solid fa-record-vinyl"></i></span><span class="nav-label">Recordings</span></a>
+        <a class="nav-link" href="/home"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span><span class="nav-label">Dashboard</span></a>
+      </div>
+      <div class="nav-footer">
+        <div class="nav-user">{{ (current_user or "").split("@")[0] }}</div>
+        <a class="nav-logout" href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <h2 class="title">איחסון הקלטות</h2>
+    <div class="counter">לקוחות בהמתנה: <span id="waiting-count">0</span></div>
+    <input type="text" id="search" placeholder="חיפוש לפי לקוח, Domain או נפח..." />
+    <div class="table-card">
+      <table class="customers-table">
+        <colgroup>
+          <col class="service-name-col">
+          <col class="service-domain-col">
+          <col class="service-storage-col">
+          <col class="service-status-col">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>שם לקוח</th>
+            <th>Domain</th>
+            <th>נפח איחסון הקלטות</th>
+            <th>סטטוס</th>
+          </tr>
+        </thead>
+        <tbody id="customers-body"></tbody>
+      </table>
+    </div>
+    <div id="empty-message" class="empty" style="display:none">אין לקוחות בהמתנה</div>
+  </div>
+
+  <div id="recording-storage-confirm-modal" class="confirm-modal" style="display:none">
+    <div class="confirm-card">
+      <h3>אישור פעולה</h3>
+      <p>אם לשנות סטטוס לבוצע</p>
+      <div class="confirm-actions">
+        <button id="recording-storage-confirm-no" class="confirm-btn ghost" type="button">לא</button>
+        <button id="recording-storage-confirm-yes" class="confirm-btn" type="button">כן</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="recording_storage.js?v=3"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>

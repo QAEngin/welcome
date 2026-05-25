@@ -1,0 +1,94 @@
+.service-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.service-link {
+  color: #1268c4;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.service-link:hover {
+  text-decoration: underline;
+}
+
+.domain-cell.missing {
+  color: #d42626;
+  font-weight: 700;
+}
+
+.customers-table {
+  table-layout: fixed;
+}
+
+.customers-table th,
+.customers-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.customers-table td:first-child,
+.customers-table th:first-child {
+  text-align: right;
+}
+
+.service-name-col {
+  width: 36%;
+}
+
+.service-domain-col {
+  width: 30%;
+}
+
+.service-number-col {
+  width: 34%;
+}
+
+.service-storage-col {
+  width: 22%;
+}
+
+.service-status-col {
+  width: 12%;
+}
+
+.ltr-cell {
+  direction: ltr;
+  text-align: center;
+}
+
+.number-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  direction: ltr;
+}
+
+.number-text {
+  min-width: 96px;
+  text-align: center;
+}
+
+.copy-inline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  border: 1px solid #cdd5d2;
+  border-radius: 8px;
+  background: #fff;
+  color: #2874b8;
+  cursor: pointer;
+}
+
+.copy-inline:hover,
+.copy-inline.copied {
+  background: #e8f3fb;
+  border-color: #86b7dd;
+}

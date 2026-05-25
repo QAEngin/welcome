@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" role="img" aria-label="Recording storage service">
+  <rect width="900" height="520" fill="#e6ece6"/>
+  <rect x="72" y="70" width="756" height="380" rx="32" fill="#f7f6ef"/>
+  <rect x="150" y="135" width="600" height="86" rx="18" fill="#6f8068"/>
+  <rect x="150" y="235" width="600" height="86" rx="18" fill="#8b9a82"/>
+  <rect x="150" y="335" width="600" height="86" rx="18" fill="#a2ae9a"/>
+  <circle cx="205" cy="178" r="18" fill="#f2c84b"/>
+  <circle cx="205" cy="278" r="18" fill="#f2c84b"/>
+  <circle cx="205" cy="378" r="18" fill="#f2c84b"/>
+  <path d="M280 176h330M280 276h330M280 376h330" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+  <path d="M625 164h48v28h-48zM625 264h48v28h-48zM625 364h48v28h-48z" fill="#e6ece6"/>
+  <path d="M690 116c36 26 58 68 58 114s-22 88-58 114M648 151c23 18 37 47 37 79s-14 61-37 79" fill="none" stroke="#2f3c35" stroke-width="14" stroke-linecap="round"/>
+</svg>

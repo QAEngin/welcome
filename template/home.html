@@ -16,6 +16,9 @@
       <div class="nav-links">
         <a class="nav-link" href="/sms"><span class="nav-icon"><i class="fa-solid fa-comment-sms"></i></span><span class="nav-label">SMS</span></a>
         <a class="nav-link" href="/bot"><span class="nav-icon"><i class="fa-solid fa-robot"></i></span><span class="nav-label">Bot</span></a>
+        <a class="nav-link" href="/f2m"><span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span><span class="nav-label">F2M</span></a>
+        <a class="nav-link" href="/recording-storage"><span class="nav-icon"><i class="fa-solid fa-database"></i></span><span class="nav-label">אחסון</span></a>
+        <a class="nav-link" href="/human-service"><span class="nav-icon"><i class="fa-solid fa-headset"></i></span><span class="nav-label">מוקד</span></a>
         <a class="nav-link" href="/record"><span class="nav-icon"><i class="fa-solid fa-record-vinyl"></i></span><span class="nav-label">Recordings</span></a>
         <a class="nav-link active" href="/home"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span><span class="nav-label">Dashboard</span></a>
       </div>
@@ -61,6 +64,19 @@
       </article>
 
       <article class="service-card">
+        <span class="badge f2m">F2M</span>
+        <h2>F2M Service</h2>
+        <img class="card-image" src="/card/f2m.svg" alt="F2M Service">
+        <a class="connect-btn" href="/f2m">Connect</a>
+        <div class="active-users" id="f2m-users"></div>
+        <div class="meter-row">
+          <span>Waiting</span>
+          <span id="f2m-waiting-count">0</span>
+        </div>
+        <div class="meter"><div id="f2m-waiting-bar"></div></div>
+      </article>
+
+      <article class="service-card">
         <span class="badge rec">Recordings</span>
         <h2>Recording Service</h2>
         <img class="card-image" src="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=900&q=60" alt="Recording Service">
@@ -71,6 +87,32 @@
           <span id="recordings-waiting-count">0</span>
         </div>
         <div class="meter"><div id="recordings-waiting-bar"></div></div>
+      </article>
+
+      <article class="service-card">
+        <span class="badge storage">אחסון</span>
+        <h2>איחסון הקלטות</h2>
+        <img class="card-image" src="/card/recording-storage.svg" alt="איחסון הקלטות">
+        <a class="connect-btn" href="/recording-storage">Connect</a>
+        <div class="active-users" id="recording_storage-users"></div>
+        <div class="meter-row">
+          <span>Waiting</span>
+          <span id="recording_storage-waiting-count">0</span>
+        </div>
+        <div class="meter"><div id="recording_storage-waiting-bar"></div></div>
+      </article>
+
+      <article class="service-card">
+        <span class="badge human">מוקד</span>
+        <h2>מוקד - אנושי</h2>
+        <img class="card-image" src="/card/human-service.svg" alt="מוקד אנושי">
+        <a class="connect-btn" href="/human-service">Connect</a>
+        <div class="active-users" id="human_service-users"></div>
+        <div class="meter-row">
+          <span>Waiting</span>
+          <span id="human_service-waiting-count">0</span>
+        </div>
+        <div class="meter"><div id="human_service-waiting-bar"></div></div>
       </article>
     </section>
     </section>

@@ -17,6 +17,9 @@
 <div class="nav-links">
 <a class="nav-link active" href="/sms"><span class="nav-icon"><i class="fa-solid fa-comment-sms"></i></span><span class="nav-label">SMS</span></a>
 <a class="nav-link" href="/bot"><span class="nav-icon"><i class="fa-solid fa-robot"></i></span><span class="nav-label">Bot</span></a>
+<a class="nav-link" href="/f2m"><span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span><span class="nav-label">F2M</span></a>
+<a class="nav-link" href="/recording-storage"><span class="nav-icon"><i class="fa-solid fa-database"></i></span><span class="nav-label">אחסון</span></a>
+<a class="nav-link" href="/human-service"><span class="nav-icon"><i class="fa-solid fa-headset"></i></span><span class="nav-label">מוקד</span></a>
 <a class="nav-link" href="/record"><span class="nav-icon"><i class="fa-solid fa-record-vinyl"></i></span><span class="nav-label">Recordings</span></a>
 <a class="nav-link" href="/home"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span><span class="nav-label">Dashboard</span></a>
 </div>
@@ -80,6 +83,34 @@ placeholder="Search: Name / Domain / DID"
 oninput="setSearch(this.value)"
 />
 </div>
+</div>
+
+<div class="sms-guide card">
+<div class="guide-head">
+<h2>הוראות יצירת שירות SMS</h2>
+<div class="guide-buttons">
+<button class="guide-step active" type="button" data-step="1" onclick="showSmsGuideStep(1)">Fireberry Sync</button>
+<button class="guide-step" type="button" data-step="2" onclick="showSmsGuideStep(2)">בחירת לקוחות</button>
+<button class="guide-step" type="button" data-step="3" onclick="showSmsGuideStep(3)">Inforu Mail</button>
+<button class="guide-step" type="button" data-step="4" onclick="showSmsGuideStep(4)">Create SMS</button>
+<button class="guide-step" type="button" data-step="5" onclick="showSmsGuideStep(5)">Status Done</button>
+</div>
+</div>
+<div class="guide-panel" id="smsGuideText">
+Fireberry Sync לטעינת לקוחות.
+</div>
+</div>
+
+<div class="sms-lookup card">
+<div class="lookup-title">בדיקת Domain שנוצר</div>
+<div class="lookup-row">
+<input id="smsDomainLookupInput" class="search" type="text" placeholder="הקלד Domain" />
+<button class="btn-blue" type="button" onclick="lookupSmsDomain()">
+<i class="fa-solid fa-magnifying-glass"></i>
+Search
+</button>
+</div>
+<div id="smsDomainLookupResult" class="lookup-result"></div>
 </div>
 
 <div class="card">

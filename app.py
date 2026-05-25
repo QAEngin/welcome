@@ -42,12 +42,17 @@ SPREADSHEET_ID = "1uwtREvtWENPabibI5FSlhdYokIbBs_kuZmYVeL-BgCQ"
 SHEET_NAME = "SMS"
 # Bot sheet
 BOT_SHEET_NAME = "\u05e9\u05d9\u05e8\u05d5\u05ea \u05de\u05e2\u05e0\u05d4 - \u05d1\u05d5\u05d8"
+F2M_SHEET_NAME = "m2f / f2m"
+RECORDING_STORAGE_SHEET_NAME = "\u05d0\u05d9\u05d7\u05e1\u05d5\u05df \u05d4\u05e7\u05dc\u05d8\u05d5\u05ea"
+HUMAN_SERVICE_SHEET_NAME = "\u05e9\u05d9\u05e8\u05d5\u05ea \u05de\u05e2\u05e0\u05d4 - \u05d0\u05e0\u05d5\u05e9\u05d9"
 
 # NumberCGR pool sheet
 CGR_SHEET_NAME = "\u05d7\u05d9\u05e4_\u05e1\u05de\u05e1"
 CGR_START_ROW = 312
 CGR_COL_NUMBER = 1  # A
-CGR_COL_MARK = 3    # B (checkbox/mark)
+CGR_COL_DOMAIN = 3  # C
+CGR_COL_DATE = 4    # D
+CGR_COL_USED = 5    # E (checkbox)
 
 # Column mapping (1-based for gspread)
 COL_NAME = 1       # A
@@ -78,7 +83,14 @@ LOG_DIR = "log"
 LOG_FILE = os.path.join(LOG_DIR, "created.log")
 INFORU_LOG_FILENAME = "\u05de\u05e1\u05e4\u05e8\u05d9\u05dd \u05dc\u05d0\u05d9\u05de\u05d5\u05ea.txt"
 ACTIVE_WINDOW_MINUTES = 30
-SERVICE_ACTIVITY = {"sms": {}, "bot": {}, "recordings": {}}
+SERVICE_ACTIVITY = {
+    "sms": {},
+    "bot": {},
+    "recordings": {},
+    "f2m": {},
+    "recording_storage": {},
+    "human_service": {},
+}
 
 
 def ensure_log_file():
@@ -108,6 +120,10 @@ def append_log(customers):
 def _service_key(service_name: str) -> str:
     if service_name == "record":
         return "recordings"
+    if service_name in ("recording-storage", "recording_storage"):
+        return "recording_storage"
+    if service_name in ("human-service", "human_service"):
+        return "human_service"
     return service_name
 
 
@@ -222,6 +238,22 @@ def first_number_clean(value: str) -> str:
     if len(d) == 9:
         return d
     return d
+
+
+def normalize_phone_with_zero(value: str) -> str:
+    digits = digits_only(value)
+    if not digits:
+        return ""
+    return digits if digits.startswith("0") else f"0{digits}"
+
+
+def is_checked(value) -> bool:
+    text = str(value or "").strip().lower()
+    return text in ("true", "yes", "1", "v", "\u2713", "\u2714")
+
+
+def is_done_status(value) -> bool:
+    return str(value or "").strip() == STATUS_DONE
 
 
 def fireberry_lookup_by_idnumber(idnumber: str) -> dict:
@@ -546,6 +578,39 @@ def bot_page():
     return render_template("bot.html", current_user=session.get("username", ""))
 
 
+# ================= F2M PAGE =================
+@app.route("/f2m")
+def f2m_page():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    register_service_activity("f2m")
+    return render_template("f2m.html", current_user=session.get("username", ""))
+
+
+# ================= RECORDING STORAGE PAGE =================
+@app.route("/recording-storage")
+def recording_storage_page():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    register_service_activity("recording_storage")
+    return render_template("recording_storage.html", current_user=session.get("username", ""))
+
+
+# ================= HUMAN SERVICE PAGE =================
+@app.route("/human-service")
+def human_service_page():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    register_service_activity("human_service")
+    return render_template("human_service.html", current_user=session.get("username", ""))
+
+
 # ================= RECORD PAGE =================
 @app.route("/record")
 def record_page():
@@ -567,6 +632,9 @@ def dashboard_data():
     sms_waiting = len(get_pending_customers())
     bot_waiting = len(get_bot_customers())
     recordings_waiting = get_recordings_waiting_count()
+    f2m_waiting = len(get_f2m_customers())
+    recording_storage_waiting = len(get_recording_storage_customers())
+    human_service_waiting = len(get_human_service_customers())
 
     return jsonify({
         "sms": {
@@ -580,6 +648,18 @@ def dashboard_data():
         "recordings": {
             "waiting": recordings_waiting,
             "active_users": get_active_users_for("recordings"),
+        },
+        "f2m": {
+            "waiting": f2m_waiting,
+            "active_users": get_active_users_for("f2m"),
+        },
+        "recording_storage": {
+            "waiting": recording_storage_waiting,
+            "active_users": get_active_users_for("recording_storage"),
+        },
+        "human_service": {
+            "waiting": human_service_waiting,
+            "active_users": get_active_users_for("human_service"),
         },
     })
 
@@ -725,6 +805,64 @@ def fireberry_by_id():
         return jsonify({"ok": False, "message": f"Error: {str(e)}"}), 500
 
 
+@app.route("/sms-domain-lookup", methods=["POST"])
+def sms_domain_lookup():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    payload = request.get_json(silent=True) or {}
+    domain = (payload.get("domain") or "").strip()
+
+    if not domain:
+        return jsonify({"ok": False, "message": "Missing domain"}), 400
+
+    client = get_gspread_client()
+    sheet_names = ["\u05d7\u05d9\u05e4", CGR_SHEET_NAME]
+    last_error = None
+
+    for sheet_name in sheet_names:
+        try:
+            ws = client.open_by_key(SPREADSHEET_ID).worksheet(sheet_name)
+            data = ws.get_all_values()
+            for row in data:
+                row_domain = row[2].strip() if len(row) >= 3 else ""
+                if row_domain == domain:
+                    return jsonify({
+                        "ok": True,
+                        "found": True,
+                        "domain": row_domain,
+                        "date": row[3].strip() if len(row) >= 4 else "",
+                        "did": row[5].strip() if len(row) >= 6 else "",
+                        "sheet": sheet_name,
+                    })
+        except Exception as e:
+            last_error = e
+
+    if last_error:
+        print("SMS domain lookup warning:", last_error)
+
+    return jsonify({"ok": True, "found": False})
+
+
+@app.route("/domain-by-order", methods=["POST"])
+def domain_by_order():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    payload = request.get_json(silent=True) or {}
+    order_id = (payload.get("order_id") or "").strip()
+
+    if not order_id:
+        return jsonify({"ok": False, "message": "Missing order_id"}), 400
+
+    domain = get_domain_from_crm(order_id)
+    return jsonify({
+        "ok": True,
+        "found": bool(domain),
+        "domain": domain,
+    })
+
+
 @app.route("/mark-done", methods=["POST"])
 def mark_done():
 
@@ -761,11 +899,14 @@ def mark_done():
             "did": did
         })
 
-        # CGR sheet update (׳—׳™׳₪_׳¡׳׳¡ column C)
+        # CGR sheet update (׳—׳™׳₪_׳¡׳׳¡ columns C:E)
         if isinstance(cgr_row, int) and domain:
             cgr_updates.append({
-                "range": gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_MARK),
-                "values": [[domain]]
+                "range": (
+                    f"{gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_DOMAIN)}:"
+                    f"{gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_USED)}"
+                ),
+                "values": [[domain, datetime.now().strftime("%Y-%m-%d"), True]]
             })
 
     if not rows:
@@ -938,11 +1079,14 @@ def export_csv():
             "template": template_txt
         }
         )
-        # Update ׳—׳™׳₪_׳¡׳׳¡ Column B with Domain (as requested)
+        # Update ׳—׳™׳₪_׳¡׳׳¡ columns C:E with Domain, date, and used checkbox.
         if isinstance(cgr_row, int) and cgr_row >= 1 and domain:
             updates.append({
-                "range": gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_MARK),
-                "values": [[domain]]
+                "range": (
+                    f"{gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_DOMAIN)}:"
+                    f"{gspread.utils.rowcol_to_a1(cgr_row, CGR_COL_USED)}"
+                ),
+                "values": [[domain, datetime.now().strftime("%Y-%m-%d"), True]]
             })
 
     # Update Google Sheet ׳—׳™׳₪_׳¡׳׳¡
@@ -1089,11 +1233,174 @@ def get_bot_customers():
     return customers
 
 
+def get_f2m_customers(include_domains=False):
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(F2M_SHEET_NAME)
+
+    data = ws.get_all_values()
+
+    customers = []
+
+    if not data or len(data) < 2:
+        return customers
+
+    rows = data[1:]
+
+    domain_by_order_id = {}
+
+    for i, row in enumerate(rows, start=2):
+
+        name = row[0].strip() if len(row) >= 1 else ""
+        order_id = row[4].strip() if len(row) >= 5 else ""
+        status = row[7].strip() if len(row) >= 8 else ""
+        email = row[9].strip() if len(row) >= 10 else ""
+
+        if not email or status == STATUS_DONE:
+            continue
+
+        domain = ""
+        if include_domains and order_id:
+            if order_id not in domain_by_order_id:
+                domain_by_order_id[order_id] = get_domain_from_crm(order_id)
+            domain = domain_by_order_id[order_id]
+
+        customers.append({
+            "row": i,
+            "name": name,
+            "order_id": order_id,
+            "domain": domain,
+            "email": email,
+            "status": status or STATUS_PENDING
+        })
+
+    return customers
+
+
+def get_recording_storage_customers(include_domains=False):
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(RECORDING_STORAGE_SHEET_NAME)
+
+    data = ws.get_all_values()
+    customers = []
+
+    if not data or len(data) < 2:
+        return customers
+
+    domain_by_order_id = {}
+
+    for i, row in enumerate(data[1:], start=2):
+        name = row[0].strip() if len(row) >= 1 else ""
+        order_id = row[4].strip() if len(row) >= 5 else ""
+        status = row[7].strip() if len(row) >= 8 else ""
+        storage_size = row[9].strip() if len(row) >= 10 else ""
+
+        if is_done_status(status):
+            continue
+
+        domain = ""
+        if include_domains and order_id:
+            if order_id not in domain_by_order_id:
+                domain_by_order_id[order_id] = get_domain_from_crm(order_id)
+            domain = domain_by_order_id[order_id]
+
+        customers.append({
+            "row": i,
+            "name": name,
+            "order_id": order_id,
+            "domain": domain,
+            "storage_size": storage_size or "\u05d1\u05dc\u05d9 \u05e0\u05e4\u05d7",
+            "status": status or STATUS_PENDING
+        })
+
+    return customers
+
+
+def get_human_service_customers(include_domains=False):
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(HUMAN_SERVICE_SHEET_NAME)
+
+    data = ws.get_all_values()
+    customers = []
+
+    if not data or len(data) < 2:
+        return customers
+
+    domain_by_order_id = {}
+
+    for i, row in enumerate(data[1:], start=2):
+        name = row[0].strip() if len(row) >= 1 else ""
+        order_id = row[4].strip() if len(row) >= 5 else ""
+        hip_number = normalize_phone_with_zero(row[9] if len(row) >= 10 else "")
+        done = is_checked(row[13] if len(row) >= 14 else "")
+
+        if done or not hip_number:
+            continue
+
+        domain = ""
+        if include_domains and order_id:
+            if order_id not in domain_by_order_id:
+                domain_by_order_id[order_id] = get_domain_from_crm(order_id)
+            domain = domain_by_order_id[order_id]
+
+        customers.append({
+            "row": i,
+            "name": name,
+            "order_id": order_id,
+            "domain": domain,
+            "hip": hip_number
+        })
+
+    return customers
+
+
 @app.route("/bot-data")
 def bot_data():
     register_service_activity("bot")
 
     customers = get_bot_customers()
+
+    return jsonify({
+        "count": len(customers),
+        "customers": customers
+    })
+
+
+@app.route("/f2m-data")
+def f2m_data():
+    register_service_activity("f2m")
+
+    customers = get_f2m_customers(include_domains=True)
+
+    return jsonify({
+        "count": len(customers),
+        "customers": customers
+    })
+
+
+@app.route("/recording-storage-data")
+def recording_storage_data():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    register_service_activity("recording_storage")
+    customers = get_recording_storage_customers(include_domains=False)
+
+    return jsonify({
+        "count": len(customers),
+        "customers": customers
+    })
+
+
+@app.route("/human-service-data")
+def human_service_data():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    register_service_activity("human_service")
+    customers = get_human_service_customers(include_domains=False)
 
     return jsonify({
         "count": len(customers),
@@ -1115,6 +1422,56 @@ def bot_done():
     ws = client.open_by_key(SPREADSHEET_ID).worksheet(BOT_SHEET_NAME)
 
     ws.update_cell(row, 16, True)  # column P checkbox
+
+    return jsonify({"ok": True})
+
+
+@app.route("/f2m-done", methods=["POST"])
+def f2m_done():
+
+    payload = request.get_json(silent=True) or {}
+
+    row = payload.get("row")
+
+    if not isinstance(row, int) or row < 2:
+        return jsonify({"ok": False, "message": "Invalid row"}), 400
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(F2M_SHEET_NAME)
+
+    ws.update_cell(row, COL_STATUS, STATUS_DONE)
+
+    return jsonify({"ok": True})
+
+
+@app.route("/recording-storage-done", methods=["POST"])
+def recording_storage_done():
+
+    payload = request.get_json(silent=True) or {}
+    row = payload.get("row")
+
+    if not isinstance(row, int) or row < 2:
+        return jsonify({"ok": False, "message": "Invalid row"}), 400
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(RECORDING_STORAGE_SHEET_NAME)
+    ws.update_cell(row, COL_STATUS, STATUS_DONE)
+
+    return jsonify({"ok": True})
+
+
+@app.route("/human-service-done", methods=["POST"])
+def human_service_done():
+
+    payload = request.get_json(silent=True) or {}
+    row = payload.get("row")
+
+    if not isinstance(row, int) or row < 2:
+        return jsonify({"ok": False, "message": "Invalid row"}), 400
+
+    client = get_gspread_client()
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(HUMAN_SERVICE_SHEET_NAME)
+    ws.update_cell(row, COL_STATUS, STATUS_DONE)
 
     return jsonify({"ok": True})
 

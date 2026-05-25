@@ -64,7 +64,10 @@ body {
 
 .badge.sms { background: #be7f7f; }
 .badge.bot { background: #6da57a; }
+.badge.f2m { background: #6f93aa; }
 .badge.rec { background: #b89f58; }
+.badge.storage { background: #7f8f72; }
+.badge.human { background: #8a78a9; }
 
 .service-card h2 {
   margin: 0 0 10px;
@@ -146,6 +149,6 @@ body {
 
 @media (min-width: 981px) {
   .dashboard-wrap {
-    max-width: 1080px;
+    max-width: 1240px;
   }
 }

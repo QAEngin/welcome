@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" role="img" aria-label="Email to fax service">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#eef5f7"/>
+      <stop offset="1" stop-color="#d7e1df"/>
+    </linearGradient>
+    <linearGradient id="fax" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#cfd6d3"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="520" fill="url(#bg)"/>
+  <rect x="56" y="58" width="788" height="404" rx="34" fill="#f8f8f3" opacity=".82"/>
+  <path d="M180 350h540c31 0 56-25 56-56v-24c0-31-25-56-56-56H180c-31 0-56 25-56 56v24c0 31 25 56 56 56Z" fill="url(#fax)" stroke="#80908b" stroke-width="7"/>
+  <path d="M258 106h384c18 0 33 15 33 33v121H225V139c0-18 15-33 33-33Z" fill="#ffffff" stroke="#80908b" stroke-width="7"/>
+  <path d="M271 152h358M271 188h292M271 224h334" stroke="#9aa6a2" stroke-width="12" stroke-linecap="round"/>
+  <rect x="205" y="275" width="170" height="38" rx="19" fill="#2d8bc8"/>
+  <circle cx="657" cy="294" r="24" fill="#22a86f"/>
+  <circle cx="718" cy="294" r="24" fill="#f0c43d"/>
+  <path d="M302 395h296c17 0 31 14 31 31v36H271v-36c0-17 14-31 31-31Z" fill="#ffffff" stroke="#80908b" stroke-width="7"/>
+  <path d="M650 118h134c21 0 38 17 38 38v86c0 21-17 38-38 38H650c-21 0-38-17-38-38v-86c0-21 17-38 38-38Z" fill="#2d8bc8"/>
+  <path d="m632 152 85 62 85-62M632 247l58-49M802 247l-58-49" fill="none" stroke="#ffffff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M120 138h72M156 102v72M734 382h58M763 353v58" stroke="#2d8bc8" stroke-width="14" stroke-linecap="round" opacity=".65"/>
+</svg>

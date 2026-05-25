@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>F2M Queue</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/nav.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="bot.css">
+  <link rel="stylesheet" href="f2m.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="site-nav-inner">
+      <a class="brand" href="/home"><span class="brand-kicker">Support Suite</span><span class="brand-main">Services</span></a>
+      <button class="nav-toggle" type="button">Menu</button>
+      <div class="nav-links">
+        <a class="nav-link" href="/sms"><span class="nav-icon"><i class="fa-solid fa-comment-sms"></i></span><span class="nav-label">SMS</span></a>
+        <a class="nav-link" href="/bot"><span class="nav-icon"><i class="fa-solid fa-robot"></i></span><span class="nav-label">Bot</span></a>
+        <a class="nav-link active" href="/f2m"><span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span><span class="nav-label">F2M</span></a>
+        <a class="nav-link" href="/recording-storage"><span class="nav-icon"><i class="fa-solid fa-database"></i></span><span class="nav-label">אחסון</span></a>
+        <a class="nav-link" href="/human-service"><span class="nav-icon"><i class="fa-solid fa-headset"></i></span><span class="nav-label">מוקד</span></a>
+        <a class="nav-link" href="/record"><span class="nav-icon"><i class="fa-solid fa-record-vinyl"></i></span><span class="nav-label">Recordings</span></a>
+        <a class="nav-link" href="/home"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span><span class="nav-label">Dashboard</span></a>
+      </div>
+      <div class="nav-footer">
+        <div class="nav-user">{{ (current_user or "").split("@")[0] }}</div>
+        <a class="nav-logout" href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <h2 class="title">F2M</h2>
+    <div class="tool-link"><a href="https://login.interfax.net/login?returnUrl=%2Fproduct%2Fsettings%2FInterFAX%2FInterFAX-Upland.Bamba.InterFAX.Administration.FaxUsers.Folder&locale=en-US" target="_blank" rel="noopener">InterFAX</a></div>
+    <section class="instructions">
+      <h3>הוספת הרשאה לשליחת פקס ממייל</h3>
+      <ol>
+        <li>יש להקיש בקישור <a href="https://login.interfax.net/login?returnUrl=%2Fproduct%2Fsettings%2FInterFAX%2FInterFAX-Upland.Bamba.InterFAX.Administration.FaxUsers.Folder&locale=en-US" target="_blank" rel="noopener">InterFAX</a>.</li>
+        <li>לבחור משתמש: <strong>fax2mail</strong>.</li>
+        <li>יש ללחוץ על <i class="fa-solid fa-ellipsis-vertical"></i> בצד ימין ולבחור <strong>Outbound Settings</strong>.</li>
+        <li>בחרו במקש <strong>ADD</strong> והוסיפו את המייל שמופיע בהזמנה.</li>
+        <li>הקישו על <strong>OK</strong> ו-<strong>SAVE</strong> לשמירה.</li>
+      </ol>
+      <div class="instruction-images">
+        <button class="instruction-thumb" type="button" data-preview-src="/picture/f2m1.jpg" aria-label="הגדלת תמונה 1">
+          <img src="/picture/f2m1.jpg" alt="בחירת Outbound Settings">
+        </button>
+        <button class="instruction-thumb" type="button" data-preview-src="/picture/f2m2.jpg" aria-label="הגדלת תמונה 2">
+          <img src="/picture/f2m2.jpg" alt="שמירת מייל לשליחת פקס">
+        </button>
+      </div>
+    </section>
+    <div class="counter">לקוחות בהמתנה: <span id="waiting-count">0</span></div>
+    <input type="text" id="search" placeholder="חיפוש לפי לקוח, Domain או אמייל..." />
+    <div class="table-card">
+      <table class="customers-table">
+        <colgroup>
+          <col class="name-col">
+          <col class="domain-col">
+          <col class="email-col">
+          <col class="status-col">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>שם הלקוח</th>
+            <th>Domain</th>
+            <th>אמייל</th>
+            <th>סטטוס</th>
+          </tr>
+        </thead>
+        <tbody id="customers-body"></tbody>
+      </table>
+    </div>
+    <div id="empty-message" class="empty" style="display:none">אין לקוחות בהמתנה</div>
+  </div>
+
+  <div id="f2m-confirm-modal" class="confirm-modal" style="display:none">
+    <div class="confirm-card">
+      <h3>אישור פעולה</h3>
+      <p>אם לשנות סטטוס לבוצע</p>
+      <div class="confirm-actions">
+        <button id="f2m-confirm-no" class="confirm-btn ghost" type="button">לא</button>
+        <button id="f2m-confirm-yes" class="confirm-btn" type="button">כן</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="image-preview-modal" class="image-preview-modal" style="display:none">
+    <button id="image-preview-close" class="image-preview-close" type="button" aria-label="סגירה">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <img id="image-preview" src="" alt="">
+  </div>
+
+  <script src="f2m.js"></script>
+  <script src="/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" role="img" aria-label="Human call center service">
+  <rect width="900" height="520" fill="#ebe8f1"/>
+  <rect x="78" y="64" width="744" height="392" rx="34" fill="#f8f6ef"/>
+  <circle cx="450" cy="220" r="112" fill="#8a78a9"/>
+  <circle cx="450" cy="190" r="54" fill="#f5d4be"/>
+  <path d="M342 336c28-58 70-88 108-88s80 30 108 88" fill="#5e5375"/>
+  <path d="M318 213c0-75 59-136 132-136s132 61 132 136" fill="none" stroke="#2f3040" stroke-width="22" stroke-linecap="round"/>
+  <rect x="278" y="210" width="54" height="92" rx="22" fill="#2f3040"/>
+  <rect x="568" y="210" width="54" height="92" rx="22" fill="#2f3040"/>
+  <path d="M594 304c-13 55-64 91-124 91h-36" fill="none" stroke="#2f3040" stroke-width="18" stroke-linecap="round"/>
+  <rect x="404" y="375" width="72" height="28" rx="14" fill="#2f3040"/>
+  <path d="M160 128h118M160 174h84M622 132h118M656 178h84" stroke="#8a78a9" stroke-width="16" stroke-linecap="round" opacity=".68"/>
+</svg>

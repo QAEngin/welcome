@@ -30,8 +30,14 @@ async function loadDashboardData() {
     renderUsers("sms", data?.sms?.active_users);
     renderWaiting("bot", data?.bot?.waiting);
     renderUsers("bot", data?.bot?.active_users);
+    renderWaiting("f2m", data?.f2m?.waiting);
+    renderUsers("f2m", data?.f2m?.active_users);
     renderWaiting("recordings", data?.recordings?.waiting);
     renderUsers("recordings", data?.recordings?.active_users);
+    renderWaiting("recording_storage", data?.recording_storage?.waiting);
+    renderUsers("recording_storage", data?.recording_storage?.active_users);
+    renderWaiting("human_service", data?.human_service?.waiting);
+    renderUsers("human_service", data?.human_service?.active_users);
   } catch (err) {
     console.error("dashboard data error", err);
   }

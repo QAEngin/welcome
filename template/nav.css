@@ -22,6 +22,7 @@ body.has-side-nav {
   z-index: 1300;
   background: linear-gradient(180deg, var(--nav-bg) 0%, var(--nav-bg-2) 100%);
   border-right: 1px solid var(--nav-border);
+  direction: rtl;
 }
 
 .site-nav-inner {
@@ -83,6 +84,7 @@ body.has-side-nav {
   gap: 10px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
+  text-align: right;
 }
 
 .nav-icon {
@@ -98,6 +100,7 @@ body.has-side-nav {
 
 .nav-label {
   line-height: 1;
+  flex: 1;
 }
 
 .nav-link:hover {

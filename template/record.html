@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/nav.css">
 <link rel="stylesheet" href="/record.css">
 </head>
-<body>
+<body class="has-side-nav">
 
 <nav class="site-nav">
   <div class="site-nav-inner">
@@ -34,6 +34,7 @@
   <h2>Recordings</h2>
   <button class="load-btn" onclick="loadData()">Load Recordings</button>
 
+  <div class="counter">לקוחות בהמתנה: <span id="waiting-count">0</span></div>
   <table id="table">
       <thead>
           <tr>
@@ -46,6 +47,7 @@
       </thead>
       <tbody id="table-body"></tbody>
   </table>
+  <div id="empty-message" class="empty" style="display:none">אין לקוחות בהמתנה</div>
 </div>
 
 <div id="confirm-modal" class="confirm-modal" style="display:none">
@@ -65,8 +67,20 @@ let pendingDone = null;
 async function loadData() {
     const res = await fetch("/recordings-data");
     const data = await res.json();
+    const tableBody = document.getElementById("table-body");
+    const empty = document.getElementById("empty-message");
+    const count = document.getElementById("waiting-count");
 
     let html = "";
+    count.innerText = data.length || 0;
+
+    if (!data.length) {
+        tableBody.innerHTML = "";
+        empty.style.display = "block";
+        return;
+    }
+
+    empty.style.display = "none";
 
     data.forEach((r) => {
         html += `
@@ -90,7 +104,7 @@ async function loadData() {
         `;
     });
 
-    document.getElementById("table-body").innerHTML = html;
+    tableBody.innerHTML = html;
 }
 
 function askBeforeDone(fileId, buttonEl) {

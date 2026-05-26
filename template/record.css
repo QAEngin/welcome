@@ -3,6 +3,7 @@ body {
   background: #e7e3da;
   margin: 0;
   color: #2e332f;
+  box-sizing: border-box;
 }
 
 .record-wrap {
@@ -53,7 +54,7 @@ th {
   text-align: center;
 }
 
-a {
+.record-wrap a {
   color: #2563eb;
   text-decoration: none;
   font-weight: 700;
@@ -72,6 +73,20 @@ a {
 
 .load-btn:hover {
   background: #257c56;
+}
+
+.counter {
+  font-size: 18px;
+  margin-bottom: 16px;
+  text-align: center;
+  color: #49524d;
+}
+
+.empty {
+  text-align: center;
+  margin-top: 26px;
+  opacity: 0.75;
+  font-size: 18px;
 }
 
 .actions-cell {

@@ -45,6 +45,7 @@ BOT_SHEET_NAME = "\u05e9\u05d9\u05e8\u05d5\u05ea \u05de\u05e2\u05e0\u05d4 - \u05
 F2M_SHEET_NAME = "m2f / f2m"
 RECORDING_STORAGE_SHEET_NAME = "\u05d0\u05d9\u05d7\u05e1\u05d5\u05df \u05d4\u05e7\u05dc\u05d8\u05d5\u05ea"
 HUMAN_SERVICE_SHEET_NAME = "\u05e9\u05d9\u05e8\u05d5\u05ea \u05de\u05e2\u05e0\u05d4 - \u05d0\u05e0\u05d5\u05e9\u05d9"
+HUMAN_SERVICE_DONE_COL = 14  # N checkbox
 
 # NumberCGR pool sheet
 CGR_SHEET_NAME = "\u05d7\u05d9\u05e4_\u05e1\u05de\u05e1"
@@ -1471,7 +1472,7 @@ def human_service_done():
 
     client = get_gspread_client()
     ws = client.open_by_key(SPREADSHEET_ID).worksheet(HUMAN_SERVICE_SHEET_NAME)
-    ws.update_cell(row, COL_STATUS, STATUS_DONE)
+    ws.update_cell(row, HUMAN_SERVICE_DONE_COL, True)
 
     return jsonify({"ok": True})
 

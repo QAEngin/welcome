@@ -7,6 +7,7 @@ import pandas as pd
 import gspread
 import requests
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from google.auth.exceptions import RefreshError
 from google.auth.transport.requests import Request
 from google.oauth2.service_account import Credentials
@@ -46,6 +47,9 @@ F2M_SHEET_NAME = "m2f / f2m"
 RECORDING_STORAGE_SHEET_NAME = "\u05d0\u05d9\u05d7\u05e1\u05d5\u05df \u05d4\u05e7\u05dc\u05d8\u05d5\u05ea"
 HUMAN_SERVICE_SHEET_NAME = "\u05e9\u05d9\u05e8\u05d5\u05ea \u05de\u05e2\u05e0\u05d4 - \u05d0\u05e0\u05d5\u05e9\u05d9"
 HUMAN_SERVICE_DONE_COL = 14  # N checkbox
+RECORDING_OPENING_SHEET_NAME = "\u05d4\u05e7\u05dc\u05d8\u05ea \u05e4\u05ea\u05d9\u05d7 - \u05d0\u05d5\u05dc\u05e4\u05df"
+RECORDING_WITH_MUSIC = "\u05e2\u05dd \u05de\u05d5\u05e1\u05d9\u05e7\u05ea \u05e8\u05e7\u05e2"
+RECORDING_WITHOUT_MUSIC = "\u05d1\u05dc\u05d9 \u05de\u05d5\u05e1\u05d9\u05e7\u05ea \u05e8\u05e7\u05e2"
 
 # NumberCGR pool sheet
 CGR_SHEET_NAME = "\u05d7\u05d9\u05e4_\u05e1\u05de\u05e1"
@@ -54,6 +58,40 @@ CGR_COL_NUMBER = 1  # A
 CGR_COL_DOMAIN = 3  # C
 CGR_COL_DATE = 4    # D
 CGR_COL_USED = 5    # E (checkbox)
+
+FEATURE_REPORT_SERVICES = {
+    "recordings": {
+        "label": "\u05d4\u05e7\u05dc\u05d8\u05d5\u05ea",
+        "source": "drive_done",
+        "category_sheet": RECORDING_OPENING_SHEET_NAME,
+        "order_col": 5,    # E
+        "category_col": 8, # H
+    },
+    "bot": {
+        "label": "BOT",
+        "sheet": BOT_SHEET_NAME,
+        "status_col": 8,   # H
+        "date_col": 17,    # Q
+        "date_order": "mdy",
+        "status_value": "\u05d1\u05d5\u05e6\u05e2",
+    },
+    "human": {
+        "label": "\u05de\u05d5\u05e7\u05d3",
+        "sheet": HUMAN_SERVICE_SHEET_NAME,
+        "status_col": 8,   # H
+        "date_col": 15,    # O
+        "date_order": "mdy",
+        "status_value": "\u05d1\u05d5\u05e6\u05e2",
+    },
+    "sms": {
+        "label": "SMS",
+        "sheet": CGR_SHEET_NAME,
+        "status_col": 5,   # E
+        "date_col": 4,     # D
+        "date_order": "mdy",
+        "checkbox": True,
+    },
+}
 
 # Column mapping (1-based for gspread)
 COL_NAME = 1       # A
@@ -73,6 +111,7 @@ CRM_URL = (os.environ.get("CRM_URL") or "").strip()
 FIREBERRY_URL = CRM_URL
 DRIVE_FOLDER_ID = os.environ.get("DRIVE_FOLDER_ID", "1MOdZ1gTYGizpKlc6CtErskM_KMRp-2Db")
 DRIVE_DONE_FOLDER_NAME = os.environ.get("DRIVE_DONE_FOLDER_NAME", "Done")
+DRIVE_DONE_FOLDER_ID = os.environ.get("DRIVE_DONE_FOLDER_ID", "1LAJ0Ayjpt1HmsRnwmvNJY_RkVcbEffP_")
 
 if not FIREBERRY_TOKENID:
     raise RuntimeError("FIREBERRY_TOKENID not found in .env")
@@ -518,6 +557,187 @@ def get_recordings_waiting_count():
     return len(results.get("files", []))
 
 
+def parse_report_date(value, preferred_order="mdy"):
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+
+    raw = raw.split()[0]
+    parts = re.split(r"[./-]", raw)
+    if len(parts) != 3:
+        return None
+
+    try:
+        first, second, year = [int(part) for part in parts]
+        if year < 100:
+            year += 2000
+
+        if first > 12 and second <= 12:
+            day, month = first, second
+        elif second > 12 and first <= 12:
+            month, day = first, second
+        elif preferred_order == "dmy":
+            day, month = first, second
+        else:
+            month, day = first, second
+
+        return datetime(year, month, day).date()
+    except ValueError:
+        return None
+
+
+def report_checkbox_marked(value):
+    text = str(value or "").strip().lower()
+    return text in ("true", "yes", "1", "v", "\u2713", "\u2714")
+
+
+def parse_drive_modified_time(value):
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        return parsed.astimezone(ZoneInfo("Asia/Jerusalem")).date()
+    except ValueError:
+        return None
+
+
+def normalize_recording_order_id(value):
+    digits = digits_only(str(value or ""))
+    return digits[:5] if len(digits) >= 5 else ""
+
+
+def normalize_recording_music_type(value):
+    text = re.sub(r"\s+", " ", str(value or "").strip())
+    if not text:
+        return "without_music"
+    if RECORDING_WITHOUT_MUSIC in text:
+        return "without_music"
+    if RECORDING_WITH_MUSIC in text:
+        return "with_music"
+    return "unknown"
+
+
+def get_recording_music_type_by_order(client, config):
+    ws = client.open_by_key(SPREADSHEET_ID).worksheet(config["category_sheet"])
+    rows = ws.get_all_values()[1:]
+    order_col = config["order_col"]
+    category_col = config["category_col"]
+    music_by_order = {}
+
+    for row in rows:
+        order_id = normalize_recording_order_id(row[order_col - 1] if len(row) >= order_col else "")
+        if not order_id:
+            continue
+        music_by_order[order_id] = normalize_recording_music_type(
+            row[category_col - 1] if len(row) >= category_col else ""
+        )
+
+    return music_by_order
+
+
+def count_done_recordings_from_drive(selected_month, client, config):
+    music_by_order = get_recording_music_type_by_order(client, config)
+    service = get_drive_service(readonly=True)
+    query = (
+        f"'{DRIVE_DONE_FOLDER_ID}' in parents and "
+        "mimeType = 'audio/wav' and trashed=false"
+    )
+    result = {
+        "count": 0,
+        "children": [
+            {"key": "recordings_with_music", "label": RECORDING_WITH_MUSIC, "count": 0},
+            {"key": "recordings_without_music", "label": RECORDING_WITHOUT_MUSIC, "count": 0},
+        ],
+    }
+    page_token = None
+
+    while True:
+        response = service.files().list(
+            q=query,
+            fields="nextPageToken, files(id, name, modifiedTime)",
+            pageSize=1000,
+            pageToken=page_token,
+        ).execute()
+
+        for file_item in response.get("files", []):
+            modified_date = parse_drive_modified_time(file_item.get("modifiedTime"))
+            if not modified_date:
+                continue
+            if modified_date.year == selected_month.year and modified_date.month == selected_month.month:
+                result["count"] += 1
+                order_id = extract_order_id_from_record(file_item.get("name", ""))
+                if not order_id:
+                    order_id = normalize_recording_order_id(file_item.get("name", ""))
+                music_type = music_by_order.get(order_id, "unknown")
+                if music_type == "with_music":
+                    result["children"][0]["count"] += 1
+                else:
+                    result["children"][1]["count"] += 1
+
+        page_token = response.get("nextPageToken")
+        if not page_token:
+            break
+
+    return result
+
+
+def get_feature_report_counts(month_value):
+    selected_month = datetime.strptime(month_value, "%Y-%m")
+    client = get_gspread_client()
+    reports = []
+
+    for service_key, config in FEATURE_REPORT_SERVICES.items():
+        if config.get("source") == "drive_done":
+            recording_counts = count_done_recordings_from_drive(selected_month, client, config)
+            reports.append({
+                "key": service_key,
+                "label": config["label"],
+                "count": recording_counts["count"],
+                "children": recording_counts["children"],
+            })
+            continue
+
+        ws = client.open_by_key(SPREADSHEET_ID).worksheet(config["sheet"])
+        rows = ws.get_all_values()[1:]
+        count = 0
+
+        for row in rows:
+            status_col = config["status_col"]
+            date_col = config["date_col"]
+            status = row[status_col - 1].strip() if len(row) >= status_col else ""
+            date_value = row[date_col - 1].strip() if len(row) >= date_col else ""
+
+            if config.get("checkbox"):
+                is_done = report_checkbox_marked(status)
+            else:
+                is_done = status == config["status_value"]
+
+            if not is_done:
+                continue
+
+            done_date = parse_report_date(date_value, config.get("date_order", "mdy"))
+            if not done_date:
+                continue
+
+            if done_date.year == selected_month.year and done_date.month == selected_month.month:
+                count += 1
+
+        reports.append({
+            "key": service_key,
+            "label": config["label"],
+            "count": count,
+        })
+
+    return {
+        "month": month_value,
+        "month_display": selected_month.strftime("%m/%Y"),
+        "services": reports,
+        "total": sum(item["count"] for item in reports),
+    }
+
+
 # ================= ROOT =================
 @app.route("/")
 def root():
@@ -621,6 +841,33 @@ def record_page():
 
     register_service_activity("recordings")
     return render_template("record.html", current_user=session.get("username", ""))
+
+
+@app.route("/features-report")
+def features_report_page():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    return render_template("features_report.html", current_user=session.get("username", ""))
+
+
+@app.route("/features-report-data")
+def features_report_data():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    month_value = request.args.get("month", datetime.now().strftime("%Y-%m"))
+
+    try:
+        report = get_feature_report_counts(month_value)
+    except ValueError:
+        return jsonify({"ok": False, "error": "Invalid month"}), 400
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+    return jsonify({"ok": True, "report": report})
 
 
 @app.route("/dashboard-data")

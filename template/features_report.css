@@ -1,0 +1,248 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #bcb3a5 0%, #cfc6b9 100%);
+  color: #f4f0e9;
+}
+
+.report-wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 18px 20px 30px;
+}
+
+.report-panel {
+  background: linear-gradient(135deg, #ab9f90 0%, #b9ae9f 100%);
+  border-radius: 24px;
+  padding: 18px 16px 22px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow: 0 18px 36px rgba(70, 63, 52, 0.2);
+}
+
+.report-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.welcome {
+  margin: 8px 0 4px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.report-head h1 {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.export-control,
+.filters-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.export-btn,
+.load-btn {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 0 14px;
+  cursor: pointer;
+  background: #28b571;
+  color: #f7fffa;
+  font-weight: 800;
+}
+
+.export-btn:hover,
+.load-btn:hover {
+  background: #20a164;
+}
+
+.export-control select,
+.filters-row input {
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  padding: 0 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #3f392f;
+}
+
+.filters-row {
+  margin-bottom: 14px;
+  padding: 12px;
+  background: rgba(89, 78, 63, 0.38);
+  border-radius: 14px;
+}
+
+.filters-row label {
+  font-weight: 800;
+}
+
+.report-table-wrap {
+  background: rgba(89, 78, 63, 0.55);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.16);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.summary-row strong {
+  min-width: 72px;
+  min-height: 56px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 14px;
+  background: #f2c84b;
+  color: #3f392f;
+  font-size: 34px;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+  padding: 15px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+  text-align: right;
+}
+
+.report-table th {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+.report-service {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
+.service-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #28b571;
+}
+
+.counter-cell {
+  width: 160px;
+  color: #f2c84b;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.sub-row td {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sub-service {
+  padding-inline-start: 28px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.sub-dot {
+  width: 8px;
+  height: 8px;
+  background: #f2c84b;
+}
+
+.sub-counter {
+  color: #f7e4a0;
+  font-size: 22px;
+}
+
+.inline-message {
+  min-height: 20px;
+  margin: 12px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.inline-message.error {
+  color: #ffe1df;
+}
+
+@media (max-width: 760px) {
+  .report-wrap {
+    padding: 14px;
+  }
+
+  .report-head {
+    flex-direction: column;
+  }
+
+  .report-head h1 {
+    font-size: 32px;
+  }
+
+  .export-control,
+  .filters-row,
+  .filters-row input,
+  .filters-row button {
+    width: 100%;
+  }
+
+  .counter-cell {
+    width: 90px;
+  }
+}
+
+@media print {
+  .site-nav,
+  .report-head,
+  .filters-row,
+  .inline-message {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #111;
+  }
+
+  .report-wrap {
+    padding: 0;
+  }
+
+  .report-panel,
+  .report-table-wrap {
+    box-shadow: none;
+    background: #fff;
+    color: #111;
+    border-color: #ccc;
+  }
+
+  .report-table th,
+  .report-table td {
+    border-color: #ddd;
+    color: #111;
+  }
+}

@@ -68,6 +68,7 @@ body {
 .badge.rec { background: #b89f58; }
 .badge.storage { background: #7f8f72; }
 .badge.human { background: #8a78a9; }
+.badge.report { background: #6c8c94; }
 
 .service-card h2 {
   margin: 0 0 10px;
@@ -79,6 +80,16 @@ body {
   object-fit: cover;
   border-radius: 12px;
   display: block;
+}
+
+.report-card-art {
+  height: 170px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(40, 181, 113, 0.28), rgba(242, 200, 75, 0.24));
+  color: #f7fffa;
+  font-size: 64px;
 }
 
 .connect-btn {

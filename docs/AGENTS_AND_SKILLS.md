@@ -102,6 +102,27 @@ Checks:
 - The row disappears after a successful done update.
 - Empty message appears when no customers are waiting.
 
+## Support Ticket Master Agent
+
+Scope:
+
+- `docs/SUPPORT_TICKET_MASTER_SKILL.md`
+- `template/support_tickets.html`
+- `template/support_tickets.css`
+- `template/support_tickets.js`
+- Support ticket routes and helpers in `app.py`
+- `log/support.log`
+- `Screens/TicketID####/`
+
+Checks:
+
+- Ticket ids are unique and formatted as `#0001`.
+- New tickets use Israel time and the current creator name.
+- `מרכזייה` tickets require Domain.
+- JPG attachments are saved under the matching ticket folder.
+- Assignment is limited to `Admin`, `Yevgeni`, and `Nir`.
+- Status colors remain yellow for `Waiting` and green for `Done`.
+
 ## GitHub Expert Agent
 
 Repository:

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support Tickets</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/nav.css">
+  <link rel="stylesheet" href="/support_tickets.css">
+</head>
+<body>
+  <nav class="site-nav">
+    <div class="site-nav-inner">
+      <a class="brand" href="/home"><span class="brand-kicker">Support Suite</span><span class="brand-main">Services</span></a>
+      <button class="nav-toggle" type="button">Menu</button>
+      <div class="nav-links">
+        <a class="nav-link" href="/sms"><span class="nav-icon"><i class="fa-solid fa-comment-sms"></i></span><span class="nav-label">SMS</span></a>
+        <a class="nav-link" href="/bot"><span class="nav-icon"><i class="fa-solid fa-robot"></i></span><span class="nav-label">Bot</span></a>
+        <a class="nav-link" href="/f2m"><span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span><span class="nav-label">F2M</span></a>
+        <a class="nav-link" href="/recording-storage"><span class="nav-icon"><i class="fa-solid fa-database"></i></span><span class="nav-label">אחסון</span></a>
+        <a class="nav-link" href="/human-service"><span class="nav-icon"><i class="fa-solid fa-headset"></i></span><span class="nav-label">מוקד</span></a>
+        <a class="nav-link" href="/record"><span class="nav-icon"><i class="fa-solid fa-record-vinyl"></i></span><span class="nav-label">Recordings</span></a>
+        <a class="nav-link" href="/features-report"><span class="nav-icon"><i class="fa-solid fa-chart-simple"></i></span><span class="nav-label">Features Report</span></a>
+        <a class="nav-link active" href="/support-tickets"><span class="nav-icon"><i class="fa-solid fa-ticket"></i></span><span class="nav-label">Tickets</span></a>
+        <a class="nav-link" href="/home"><span class="nav-icon"><i class="fa-solid fa-chart-column"></i></span><span class="nav-label">Dashboard</span></a>
+      </div>
+      <div class="nav-footer">
+        <div class="nav-user">{{ (current_user or "").split("@")[0] }}</div>
+        <a class="nav-logout" href="/logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="tickets-shell">
+    <aside class="tickets-menu" aria-label="Ticket filters">
+      <button class="ticket-tab active" type="button" data-scope="all"><i class="fa-solid fa-inbox"></i><span>All Tickets</span><strong id="stat-all">0</strong></button>
+      <button class="ticket-tab" type="button" data-scope="my"><i class="fa-solid fa-user-check"></i><span>My Tickets</span></button>
+      <button class="ticket-tab" type="button" data-scope="unassigned"><i class="fa-regular fa-circle-question"></i><span>Unassigned</span><strong id="stat-unassigned">0</strong></button>
+
+      <div class="portal-menu">
+        <button class="portal-toggle" type="button"><i class="fa-solid fa-right-to-bracket"></i><span>Portals</span></button>
+        <div class="portal-group">
+          <h3>Centrix</h3>
+          <a class="portal-link" href="https://hot.nimbusip.com/">
+            <img src="https://hot.nimbusip.com/themes/default/images/logo.png" alt="">
+            <span>HOT PBX</span>
+          </a>
+          <a class="portal-link" href="https://tel1.nimbusip.com/">
+            <img src="https://tel1.nimbusip.com/themes/default/images/logo.png" alt="">
+            <span>Nimbus PBX</span>
+          </a>
+          <a class="portal-link" href="https://hotcc1.nimbusip.com/pbx/login.php">
+            <img src="https://hotcc.nimbusip.com/pbx/images/worldvoip.jpg" alt="">
+            <span>Callcenter HOT</span>
+          </a>
+          <a class="portal-link" href="https://cc1.nimbusip.com/pbx/login.php">
+            <img src="https://hotcc.nimbusip.com/pbx/images/worldvoip.jpg" alt="">
+            <span>Callcenter Nimbus</span>
+          </a>
+        </div>
+        <div class="portal-group">
+          <h3>Yealink</h3>
+          <a class="portal-link" href="https://eu.ymcs.yealink.com/manager/login">
+            <img src="https://www.netsapiens.com/wp-content/uploads/2020/11/yealink-1024x683.png" alt="">
+            <span>YMCS</span>
+          </a>
+        </div>
+        <div class="portal-group">
+          <h3>Grandstream</h3>
+          <a class="portal-link" href="https://eu.gdms.cloud/login">
+            <img src="https://www.grandstream.com/hubfs/Product%20Images/GDMS/gdms-new-logo.png" alt="">
+            <span>GDMS</span>
+          </a>
+        </div>
+        <div class="portal-group">
+          <h3>Network</h3>
+          <a class="portal-link" href="https://portal.instant-on.hpe.com/#/login">
+            <img src="https://mms.businesswire.com/media/20200527005081/en/726872/4/aruba-instant-on-rgb-primary_full.jpg" alt="">
+            <span>Aruba Instant-On</span>
+          </a>
+          <a class="portal-link" href="https://cloud-eu.ruijienetworks.com/sso/login?service=https%3A%2F%2Fcloud-eu.ruijienetworks.com%2Fwebproxy%2Fsso%2Fback%3Frewrite%3Doff%26back%3Dhttps%253A%252F%252Fcloud-eu.ruijienetworks.com%252Fmacc5%252FadminIntl%252F%2523%252Fmonitor_overview_global_menu">
+            <img src="https://www.aikomtech.com/wp-content/uploads/2024/04/logo-ruijie.png" alt="">
+            <span>Ruijie Cloud</span>
+          </a>
+          <a class="portal-link" href="https://185.145.252.135:8443/wsg/#m/dashboard">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9v_pstfK6ps9OCaBum2PQP1Kgr3BY3Ef-Ug&s" alt="">
+            <span>Ruckus Cloud</span>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <section class="tickets-workspace">
+      <header class="tickets-header">
+        <div>
+          <p>Support Tickets</p>
+          <h1>Support Tickets <span id="stat-waiting">0 Waiting</span></h1>
+        </div>
+        <button class="add-ticket-btn" id="open-ticket-modal" type="button"><i class="fa-solid fa-plus"></i><span>Add Ticket</span></button>
+      </header>
+
+      <section class="ticket-filters">
+        <label>
+          <span>Status</span>
+          <select id="status-filter">
+            <option value="">All</option>
+            <option value="Waiting">Waiting</option>
+            <option value="Done">Done</option>
+          </select>
+        </label>
+        <label>
+          <span>Assignee</span>
+          <select id="assignee-filter">
+            <option value="">All Users</option>
+            {% for user in support_users %}
+            <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span>Priority</span>
+          <select id="priority-filter">
+            <option value="">All</option>
+            {% for priority in priorities %}
+            <option value="{{ priority }}">{{ priority }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span>Search</span>
+          <input id="ticket-search" type="search" placeholder="Search ticket, domain, text">
+        </label>
+      </section>
+
+      <section class="ticket-list" id="ticket-list"></section>
+      <div class="tickets-empty" id="tickets-empty">No tickets found</div>
+    </section>
+  </main>
+
+  <div class="ticket-modal" id="ticket-modal" aria-hidden="true">
+    <form class="ticket-form" id="ticket-form">
+      <header>
+        <div>
+          <p>New Ticket</p>
+          <h2 id="next-ticket-id">#0001</h2>
+        </div>
+        <button class="icon-btn" id="close-ticket-modal" type="button" title="Close"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+
+      <div class="auto-row">
+        <label>
+          <span>Date and time</span>
+          <input id="created-preview" type="text" readonly>
+        </label>
+        <label>
+          <span>Creator</span>
+          <input type="text" value="{{ support_user }}" readonly>
+        </label>
+      </div>
+
+      <div class="form-grid">
+        <label>
+          <span>Ticket type</span>
+          <select name="ticket_type" required>
+            {% for ticket_type in ticket_types %}
+            <option value="{{ ticket_type }}">{{ ticket_type }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span>Service type</span>
+          <input name="service_type" id="service-type" list="service-types" autocomplete="off" required>
+          <datalist id="service-types">
+            {% for service_type in service_types %}
+            <option value="{{ service_type }}"></option>
+            {% endfor %}
+          </datalist>
+        </label>
+        <label class="domain-field" id="domain-field">
+          <span>Domain</span>
+          <input name="domain" id="domain-input" type="text" placeholder="customer.domain">
+        </label>
+        <label>
+          <span>Priority</span>
+          <select name="priority" required>
+            <option value="High">High</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </label>
+        <label>
+          <span>Assign</span>
+          <select name="assigned_to">
+            <option value="">Keep unassigned</option>
+            {% for user in support_users %}
+            <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span>JPG file</span>
+          <input name="attachment" type="file" accept=".jpg,.jpeg,image/jpeg">
+        </label>
+      </div>
+
+      <label class="description-field">
+        <span>Description</span>
+        <textarea name="description" rows="6" required></textarea>
+      </label>
+
+      <label class="description-field">
+        <span>Solution</span>
+        <textarea name="solution" rows="5"></textarea>
+      </label>
+
+      <footer>
+        <span id="ticket-form-message"></span>
+        <button class="create-ticket-btn" type="submit"><i class="fa-solid fa-check"></i><span>Create Ticket</span></button>
+      </footer>
+    </form>
+  </div>
+
+  <div class="ticket-modal" id="ticket-detail-modal" aria-hidden="true">
+    <section class="ticket-detail-card">
+      <header>
+        <div>
+          <p id="detail-kicker">Ticket</p>
+          <h2 id="detail-title">#0001</h2>
+        </div>
+        <button class="icon-btn" id="close-detail-modal" type="button" title="Close"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="detail-grid" id="detail-grid"></div>
+      <section class="detail-description">
+        <h3>Description</h3>
+        <p id="detail-description"></p>
+      </section>
+      <section class="detail-description">
+        <h3>Solution</h3>
+        <p id="detail-solution"></p>
+      </section>
+      <section class="detail-attachments" id="detail-attachments"></section>
+    </section>
+  </div>
+
+  <div class="ticket-modal image-modal" id="image-modal" aria-hidden="true">
+    <section class="image-card">
+      <button class="icon-btn image-close" id="close-image-modal" type="button" title="Close"><i class="fa-solid fa-xmark"></i></button>
+      <img id="image-preview" src="" alt="Ticket attachment">
+    </section>
+  </div>
+
+  <script src="/nav.js"></script>
+  <script src="/support_tickets.js"></script>
+</body>
+</html>

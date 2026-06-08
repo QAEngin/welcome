@@ -1,5 +1,6 @@
 ﻿from flask import Flask, render_template, request, jsonify, send_file
 import os
+from werkzeug.utils import secure_filename
 import re
 import io
 import json
@@ -121,8 +122,23 @@ if not FIREBERRY_URL:
 # Logging
 LOG_DIR = "log"
 LOG_FILE = os.path.join(LOG_DIR, "created.log")
+SUPPORT_LOG_FILE = os.path.join(LOG_DIR, "support.log")
+SUPPORT_SCREEN_DIR = "Screens"
 INFORU_LOG_FILENAME = "\u05de\u05e1\u05e4\u05e8\u05d9\u05dd \u05dc\u05d0\u05d9\u05de\u05d5\u05ea.txt"
 ACTIVE_WINDOW_MINUTES = 30
+SUPPORT_USERS = ["Admin", "Yevgeni", "Nir"]
+SUPPORT_STATUSES = ["Waiting", "Done"]
+SUPPORT_PRIORITIES = ["High", "Medium", "Low"]
+SUPPORT_TICKET_TYPES = ["תקלה", "שאלה", "שירות", "נוסף"]
+SUPPORT_SERVICE_TYPES = [
+    "מרכזייה",
+    "מצלמות",
+    "שרתים",
+    "מרכזייה אנלוגית",
+    "GDMS",
+    "Provision ymcs",
+    "אפליקציה Cloud Softphone",
+]
 SERVICE_ACTIVITY = {
     "sms": {},
     "bot": {},
@@ -130,6 +146,7 @@ SERVICE_ACTIVITY = {
     "f2m": {},
     "recording_storage": {},
     "human_service": {},
+    "support_tickets": {},
 }
 
 
@@ -155,6 +172,114 @@ def append_log(customers):
             did = (c.get("did") or "").strip()
             f.write(f"{name}\t{domain}\t{did}\n")
         f.write("\n")
+
+
+def ensure_support_log_file():
+    os.makedirs(LOG_DIR, exist_ok=True)
+    if not os.path.exists(SUPPORT_LOG_FILE):
+        with open(SUPPORT_LOG_FILE, "a", encoding="utf-8") as f:
+            f.write("")
+
+
+def israel_now():
+    return datetime.now(ZoneInfo("Asia/Jerusalem"))
+
+
+def support_user_name():
+    raw = (session.get("username") or session.get("email") or "").strip()
+    local = raw.split("@")[0].lower()
+    if local in {"admin", "isaac"}:
+        return "Admin"
+    if local in {"eugeni", "yevgeni", "evgeni"}:
+        return "Yevgeni"
+    if local == "nir":
+        return "Nir"
+    return raw.split("@")[0] or "Admin"
+
+
+def normalize_support_ticket(ticket):
+    ticket = dict(ticket or {})
+    ticket["id"] = int(ticket.get("id") or 0)
+    ticket["ticket_id"] = f"#{ticket['id']:04d}"
+    ticket.setdefault("status", "Waiting")
+    ticket.setdefault("assigned_to", "")
+    ticket.setdefault("solution", "")
+    ticket.setdefault("attachments", [])
+    ticket.setdefault("updates", [])
+    return ticket
+
+
+def load_support_tickets():
+    ensure_support_log_file()
+    tickets = []
+    with open(SUPPORT_LOG_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                tickets.append(normalize_support_ticket(json.loads(line)))
+            except json.JSONDecodeError:
+                continue
+    return tickets
+
+
+def save_support_tickets(tickets):
+    ensure_support_log_file()
+    with open(SUPPORT_LOG_FILE, "w", encoding="utf-8") as f:
+        for ticket in tickets:
+            f.write(json.dumps(ticket, ensure_ascii=False) + "\n")
+
+
+def next_support_ticket_id():
+    tickets = load_support_tickets()
+    return max([int(ticket.get("id") or 0) for ticket in tickets] or [0]) + 1
+
+
+def support_ticket_stats(tickets):
+    return {
+        "all": len(tickets),
+        "waiting": len([t for t in tickets if t.get("status") == "Waiting"]),
+        "done": len([t for t in tickets if t.get("status") == "Done"]),
+        "unassigned": len([t for t in tickets if not t.get("assigned_to")]),
+    }
+
+
+def save_support_attachment(file_storage, ticket_number):
+    if not file_storage or not file_storage.filename:
+        return None
+
+    original = secure_filename(file_storage.filename)
+    ext = os.path.splitext(original)[1].lower()
+    if ext not in {".jpg", ".jpeg"}:
+        raise ValueError("Only JPG files are supported")
+
+    ticket_folder = f"TicketID{ticket_number:04d}"
+    folder_path = os.path.join(SUPPORT_SCREEN_DIR, ticket_folder)
+    os.makedirs(folder_path, exist_ok=True)
+
+    timestamp = israel_now().strftime("%Y%m%d%H%M%S")
+    saved_name = secure_filename(f"{timestamp}_{original}")
+    saved_path = os.path.join(folder_path, saved_name)
+    file_storage.save(saved_path)
+
+    return {
+        "original_name": file_storage.filename,
+        "saved_name": saved_name,
+        "folder": ticket_folder,
+        "url": f"/support-ticket-attachment/{ticket_folder}/{saved_name}",
+    }
+
+
+def find_support_ticket(tickets, ticket_id):
+    try:
+        number = int(str(ticket_id).replace("#", ""))
+    except ValueError:
+        return None
+    for ticket in tickets:
+        if int(ticket.get("id") or 0) == number:
+            return ticket
+    return None
 
 
 def _service_key(service_name: str) -> str:
@@ -619,6 +744,19 @@ def normalize_recording_music_type(value):
     return "unknown"
 
 
+def extract_recording_business_name(filename):
+    base_name = os.path.splitext(os.path.basename(filename or ""))[0].strip()
+    order_id = extract_order_id_from_record(base_name)
+    if not order_id:
+        return base_name
+
+    name = re.sub(rf"^\s*{re.escape(order_id)}\s*[-–—]?\s*", "", base_name)
+    name = re.sub(rf"\s*[-–—]\s*{re.escape(order_id)}\s*$", "", name)
+    name = re.sub(r"\b\d{7,10}\b", "", name)
+    name = re.sub(r"\s*[-–—]\s*$", "", name)
+    return re.sub(r"\s+", " ", name).strip()
+
+
 def get_recording_music_type_by_order(client, config):
     ws = client.open_by_key(SPREADSHEET_ID).worksheet(config["category_sheet"])
     rows = ws.get_all_values()[1:]
@@ -637,20 +775,14 @@ def get_recording_music_type_by_order(client, config):
     return music_by_order
 
 
-def count_done_recordings_from_drive(selected_month, client, config):
+def get_done_recordings_for_month(selected_month, client, config):
     music_by_order = get_recording_music_type_by_order(client, config)
     service = get_drive_service(readonly=True)
     query = (
         f"'{DRIVE_DONE_FOLDER_ID}' in parents and "
         "mimeType = 'audio/wav' and trashed=false"
     )
-    result = {
-        "count": 0,
-        "children": [
-            {"key": "recordings_with_music", "label": RECORDING_WITH_MUSIC, "count": 0},
-            {"key": "recordings_without_music", "label": RECORDING_WITHOUT_MUSIC, "count": 0},
-        ],
-    }
+    recordings = []
     page_token = None
 
     while True:
@@ -666,19 +798,40 @@ def count_done_recordings_from_drive(selected_month, client, config):
             if not modified_date:
                 continue
             if modified_date.year == selected_month.year and modified_date.month == selected_month.month:
-                result["count"] += 1
                 order_id = extract_order_id_from_record(file_item.get("name", ""))
                 if not order_id:
                     order_id = normalize_recording_order_id(file_item.get("name", ""))
                 music_type = music_by_order.get(order_id, "unknown")
-                if music_type == "with_music":
-                    result["children"][0]["count"] += 1
-                else:
-                    result["children"][1]["count"] += 1
+                recordings.append({
+                    "order_id": order_id,
+                    "business_name": extract_recording_business_name(file_item.get("name", "")),
+                    "file_name": file_item.get("name", ""),
+                    "modified_date": modified_date,
+                    "music_type": music_type if music_type == "with_music" else "without_music",
+                })
 
         page_token = response.get("nextPageToken")
         if not page_token:
             break
+
+    return recordings
+
+
+def count_done_recordings_from_drive(selected_month, client, config):
+    recordings = get_done_recordings_for_month(selected_month, client, config)
+    result = {
+        "count": len(recordings),
+        "children": [
+            {"key": "recordings_with_music", "label": RECORDING_WITH_MUSIC, "count": 0},
+            {"key": "recordings_without_music", "label": RECORDING_WITHOUT_MUSIC, "count": 0},
+        ],
+    }
+
+    for recording in recordings:
+        if recording["music_type"] == "with_music":
+            result["children"][0]["count"] += 1
+        else:
+            result["children"][1]["count"] += 1
 
     return result
 
@@ -870,6 +1023,42 @@ def features_report_data():
     return jsonify({"ok": True, "report": report})
 
 
+@app.route("/features-report-recordings-detail")
+def features_report_recordings_detail():
+
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    month_value = request.args.get("month", datetime.now().strftime("%Y-%m"))
+
+    try:
+        selected_month = datetime.strptime(month_value, "%Y-%m")
+    except ValueError:
+        return jsonify({"ok": False, "error": "Invalid month"}), 400
+
+    client = get_gspread_client()
+    config = FEATURE_REPORT_SERVICES["recordings"]
+    recordings = get_done_recordings_for_month(selected_month, client, config)
+    recordings.sort(key=lambda item: (item["modified_date"], item["order_id"], item["business_name"]))
+
+    rows = [["שם העסק", "מס' הזמנה"]]
+    for recording in recordings:
+        rows.append([recording["business_name"], recording["order_id"]])
+
+    output = io.StringIO()
+    for row in rows:
+        output.write(",".join(f'"{str(value).replace(chr(34), chr(34) + chr(34))}"' for value in row))
+        output.write("\n")
+
+    data = io.BytesIO(("\ufeff" + output.getvalue()).encode("utf-8"))
+    return send_file(
+        data,
+        mimetype="text/csv",
+        as_attachment=True,
+        download_name=f"recordings_detail_{month_value}.csv",
+    )
+
+
 @app.route("/dashboard-data")
 def dashboard_data():
     if not session.get("logged_in"):
@@ -883,6 +1072,8 @@ def dashboard_data():
     f2m_waiting = len(get_f2m_customers())
     recording_storage_waiting = len(get_recording_storage_customers())
     human_service_waiting = len(get_human_service_customers())
+    support_ticket_list = load_support_tickets()
+    support_tickets_waiting = len([t for t in support_ticket_list if t.get("status") == "Waiting"])
 
     return jsonify({
         "sms": {
@@ -909,7 +1100,180 @@ def dashboard_data():
             "waiting": human_service_waiting,
             "active_users": get_active_users_for("human_service"),
         },
+        "support_tickets": {
+            "waiting": support_tickets_waiting,
+            "active_users": get_active_users_for("support_tickets"),
+        },
     })
+
+
+@app.route("/support-tickets")
+def support_tickets_page():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    register_service_activity("support_tickets")
+    return render_template(
+        "support_tickets.html",
+        current_user=session.get("username", ""),
+        support_user=support_user_name(),
+        support_users=SUPPORT_USERS,
+        service_types=SUPPORT_SERVICE_TYPES,
+        ticket_types=SUPPORT_TICKET_TYPES,
+        priorities=SUPPORT_PRIORITIES,
+    )
+
+
+@app.route("/support-tickets-data")
+def support_tickets_data():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    register_service_activity("support_tickets")
+    tickets = load_support_tickets()
+    scope = (request.args.get("scope") or "all").strip().lower()
+    status_filter = (request.args.get("status") or "").strip()
+    assignee_filter = (request.args.get("assignee") or "").strip()
+    priority_filter = (request.args.get("priority") or "").strip()
+    search = (request.args.get("search") or "").strip().lower()
+    current_support_user = support_user_name()
+
+    filtered = list(tickets)
+    if scope == "my":
+        filtered = [t for t in filtered if t.get("assigned_to") == current_support_user]
+    elif scope == "unassigned":
+        filtered = [t for t in filtered if not t.get("assigned_to")]
+
+    if status_filter:
+        filtered = [t for t in filtered if t.get("status") == status_filter]
+    if assignee_filter:
+        filtered = [t for t in filtered if t.get("assigned_to") == assignee_filter]
+    if priority_filter:
+        filtered = [t for t in filtered if t.get("priority") == priority_filter]
+    if search:
+        filtered = [
+            t for t in filtered
+            if search in json.dumps(t, ensure_ascii=False).lower()
+        ]
+
+    filtered.sort(key=lambda item: int(item.get("id") or 0), reverse=True)
+    return jsonify({
+        "tickets": filtered,
+        "stats": support_ticket_stats(tickets),
+        "next_id": f"#{next_support_ticket_id():04d}",
+        "current_user": current_support_user,
+        "users": SUPPORT_USERS,
+        "statuses": SUPPORT_STATUSES,
+    })
+
+
+@app.route("/support-tickets-create", methods=["POST"])
+def support_tickets_create():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    ticket_number = next_support_ticket_id()
+    service_type = (request.form.get("service_type") or "").strip()
+    domain = (request.form.get("domain") or "").strip()
+    ticket_type = (request.form.get("ticket_type") or "").strip()
+    priority = (request.form.get("priority") or "Medium").strip()
+    description = (request.form.get("description") or "").strip()
+    solution = (request.form.get("solution") or "").strip()
+    assigned_to = (request.form.get("assigned_to") or "").strip()
+
+    if ticket_type not in SUPPORT_TICKET_TYPES:
+        return jsonify({"ok": False, "message": "Invalid ticket type"}), 400
+    if priority not in SUPPORT_PRIORITIES:
+        return jsonify({"ok": False, "message": "Invalid priority"}), 400
+    if assigned_to and assigned_to not in SUPPORT_USERS:
+        return jsonify({"ok": False, "message": "Invalid assignee"}), 400
+    if service_type == "מרכזייה" and not domain:
+        return jsonify({"ok": False, "message": "Domain is required for מרכזייה"}), 400
+    if not description:
+        return jsonify({"ok": False, "message": "Description is required"}), 400
+
+    attachments = []
+    try:
+        saved_attachment = save_support_attachment(request.files.get("attachment"), ticket_number)
+        if saved_attachment:
+            attachments.append(saved_attachment)
+    except ValueError as exc:
+        return jsonify({"ok": False, "message": str(exc)}), 400
+
+    now = israel_now()
+    ticket = normalize_support_ticket({
+        "id": ticket_number,
+        "created_at": now.isoformat(timespec="seconds"),
+        "created_at_display": now.strftime("%d/%m/%Y %H:%M"),
+        "creator": support_user_name(),
+        "ticket_type": ticket_type,
+        "service_type": service_type,
+        "domain": domain,
+        "priority": priority,
+        "description": description,
+        "solution": solution,
+        "status": "Waiting",
+        "assigned_to": assigned_to,
+        "attachments": attachments,
+        "updates": [],
+    })
+
+    tickets = load_support_tickets()
+    tickets.append(ticket)
+    save_support_tickets(tickets)
+
+    return jsonify({"ok": True, "ticket": ticket})
+
+
+@app.route("/support-tickets-update", methods=["POST"])
+def support_tickets_update():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    payload = request.get_json(silent=True) or {}
+    tickets = load_support_tickets()
+    ticket = find_support_ticket(tickets, payload.get("ticket_id"))
+    if not ticket:
+        return jsonify({"ok": False, "message": "Ticket not found"}), 404
+
+    updates = ticket.setdefault("updates", [])
+    now = israel_now().isoformat(timespec="seconds")
+    actor = support_user_name()
+
+    if "assigned_to" in payload:
+        assigned_to = (payload.get("assigned_to") or "").strip()
+        if assigned_to and assigned_to not in SUPPORT_USERS:
+            return jsonify({"ok": False, "message": "Invalid assignee"}), 400
+        old_value = ticket.get("assigned_to", "")
+        ticket["assigned_to"] = assigned_to
+        updates.append({"at": now, "actor": actor, "field": "assigned_to", "from": old_value, "to": assigned_to})
+
+    if "status" in payload:
+        status = (payload.get("status") or "").strip()
+        if status not in SUPPORT_STATUSES:
+            return jsonify({"ok": False, "message": "Invalid status"}), 400
+        old_value = ticket.get("status", "Waiting")
+        ticket["status"] = status
+        updates.append({"at": now, "actor": actor, "field": "status", "from": old_value, "to": status})
+
+    save_support_tickets(tickets)
+    return jsonify({"ok": True, "ticket": normalize_support_ticket(ticket)})
+
+
+@app.route("/support-ticket-attachment/<ticket_folder>/<filename>")
+def support_ticket_attachment(ticket_folder, filename):
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+
+    if not re.fullmatch(r"TicketID\d{4}", ticket_folder):
+        return jsonify({"ok": False, "message": "Invalid ticket folder"}), 400
+
+    safe_name = secure_filename(filename)
+    file_path = os.path.abspath(os.path.join(SUPPORT_SCREEN_DIR, ticket_folder, safe_name))
+    screen_root = os.path.abspath(SUPPORT_SCREEN_DIR)
+    if os.path.commonpath([screen_root, file_path]) != screen_root or not os.path.exists(file_path):
+        return jsonify({"ok": False, "message": "Attachment not found"}), 404
+
+    return send_file(file_path)
 
 
 @app.route("/recordings-data")

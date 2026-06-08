@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}" dir="{{ dir }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ t('audit.title') }}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/nav.css">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+  {% include "_site_nav.html" %}
+
+  <main class="admin-page">
+    <section class="admin-panel">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">{{ t('admin.eyebrow') }}</p>
+          <h1>{{ t('audit.title') }}</h1>
+        </div>
+        <a class="primary-btn link-btn" id="audit-export-link" href="/admin/audit/export">{{ t('audit.export') }}</a>
+      </header>
+
+      <section class="filters">
+        <input class="tech-ltr" type="text" id="filter-actor" placeholder="{{ t('audit.filter_user') }}">
+        <input type="text" id="filter-action" placeholder="{{ t('audit.filter_action') }}">
+        <input class="tech-ltr" type="date" id="filter-start-date">
+        <input class="tech-ltr" type="date" id="filter-end-date">
+        <button class="secondary-btn" type="button" id="apply-audit-filters">{{ t('admin.apply') }}</button>
+      </section>
+
+      <div class="table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>{{ t('audit.timestamp') }}</th>
+              <th>{{ t('audit.actor') }}</th>
+              <th>{{ t('audit.target') }}</th>
+              <th>{{ t('audit.action') }}</th>
+              <th>{{ t('audit.status') }}</th>
+              <th>{{ t('audit.source') }}</th>
+              <th>{{ t('audit.metadata') }}</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body"></tbody>
+        </table>
+      </div>
+      <p class="inline-message" id="audit-message"></p>
+    </section>
+  </main>
+
+  <script>window.I18N = {{ i18n_json|safe }};</script>
+  <script src="/nav.js"></script>
+  <script src="/audit_log.js"></script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<nav class="site-nav">
+  <div class="site-nav-inner">
+    <a class="brand" href="/home" aria-label="Nimbus {{ t('nav.dashboard') }}">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 100 100" focusable="false">
+          <defs>
+            <linearGradient id="swooshGradNav" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#60a5fa" />
+              <stop offset="100%" stop-color="#2563eb" />
+            </linearGradient>
+          </defs>
+          <path d="M50,10 A40,40 0 1,1 15,35" fill="none" stroke="url(#swooshGradNav)" stroke-width="6" stroke-linecap="round" />
+        </svg>
+      </span>
+      <span class="brand-word">Nimbus</span>
+    </a>
+    <button class="nav-toggle" type="button" aria-label="{{ t('nav.open') }}"><i class="fa-solid fa-bars"></i></button>
+    <div class="nav-links">
+      <a class="nav-link {% if active_nav == 'home' %}active{% endif %}" href="/home"><span class="nav-icon"><i class="fa-solid fa-table-cells-large"></i></span><span class="nav-label">{{ t('nav.dashboard') }}</span></a>
+      <a class="nav-link {% if active_nav == 'sms' %}active{% endif %}" href="/sms"><span class="nav-icon"><i class="fa-solid fa-comment-sms"></i></span><span class="nav-label">{{ t('nav.sms') }}</span></a>
+      <a class="nav-link {% if active_nav == 'bot' %}active{% endif %}" href="/bot"><span class="nav-icon"><i class="fa-solid fa-layer-group"></i></span><span class="nav-label">{{ t('nav.bot') }}</span></a>
+      <a class="nav-link {% if active_nav == 'record' %}active{% endif %}" href="/record"><span class="nav-icon"><i class="fa-solid fa-record-vinyl"></i></span><span class="nav-label">{{ t('nav.recordings') }}</span></a>
+      {% if is_admin %}
+      <a class="nav-link {% if active_nav == 'users' %}active{% endif %}" href="/admin/users"><span class="nav-icon"><i class="fa-solid fa-users"></i></span><span class="nav-label">{{ t('nav.users') }}</span></a>
+      <a class="nav-link {% if active_nav == 'audit' %}active{% endif %}" href="/admin/audit"><span class="nav-icon"><i class="fa-solid fa-clipboard-list"></i></span><span class="nav-label">{{ t('nav.audit') }}</span></a>
+      {% endif %}
+    </div>
+    <div class="nav-footer" data-initial="{{ ((current_user or 'u').split('@')[0] or 'u')[0]|upper }}">
+      <div>
+        <div class="nav-user tech-ltr">{{ (current_user or "").split("@")[0] }}</div>
+        <div class="nav-user-role">{{ t('role.admin') if is_admin else t('role.user') }}</div>
+      </div>
+      <div class="language-switcher" aria-label="{{ t('lang.switch_label') }}">
+        <a class="{% if lang == 'he' %}active{% endif %}" href="/set-language/he">{{ t('lang.he') }}</a>
+        <a class="{% if lang == 'en' %}active{% endif %}" href="/set-language/en">{{ t('lang.en') }}</a>
+      </div>
+      <a class="nav-logout" href="/logout"><i class="fa-solid fa-right-from-bracket"></i><span>{{ t('nav.logout') }}</span></a>
+    </div>
+  </div>
+</nav>

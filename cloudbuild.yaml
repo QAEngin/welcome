@@ -1,0 +1,32 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/sms-manager-staging:$COMMIT_SHA
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/sms-manager-staging:$COMMIT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - sms-manager-staging
+      - --image=europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/sms-manager-staging:$COMMIT_SHA
+      - --region=europe-west1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --service-account=sms-manager-runtime@$PROJECT_ID.iam.gserviceaccount.com
+      - --set-env-vars=APP_ENV=staging,APP_COMMIT_SHA=$COMMIT_SHA
+      - --update-secrets=SECRET_KEY=sms-manager-secret-key:latest,FIREBASE_ADMIN_CREDENTIALS=sms-manager-firebase-admin:latest
+
+images:
+  - europe-west1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/sms-manager-staging:$COMMIT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY

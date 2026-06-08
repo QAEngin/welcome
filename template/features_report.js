@@ -1,5 +1,6 @@
 const monthFilter = document.getElementById("month-filter");
 const loadButton = document.getElementById("load-report");
+const detailExportButton = document.getElementById("recordings-detail-export");
 const exportButton = document.getElementById("export-btn");
 const exportFormat = document.getElementById("export-format");
 const reportBody = document.getElementById("report-body");
@@ -128,8 +129,15 @@ function exportReport() {
   setMessage("בחר פורמט CSV או PDF.", true);
 }
 
+function exportRecordingsDetail() {
+  const month = monthFilter.value || currentMonthValue();
+  monthFilter.value = month;
+  window.location.href = `/features-report-recordings-detail?${new URLSearchParams({ month }).toString()}`;
+}
+
 monthFilter.value = currentMonthValue();
 loadButton.addEventListener("click", loadReport);
 monthFilter.addEventListener("change", loadReport);
 exportButton.addEventListener("click", exportReport);
+detailExportButton.addEventListener("click", exportRecordingsDetail);
 loadReport();

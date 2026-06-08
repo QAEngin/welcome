@@ -48,7 +48,8 @@ body {
 }
 
 .export-btn,
-.load-btn {
+.load-btn,
+.detail-btn {
   min-height: 38px;
   display: inline-flex;
   align-items: center;
@@ -64,8 +65,17 @@ body {
 }
 
 .export-btn:hover,
-.load-btn:hover {
+.load-btn:hover,
+.detail-btn:hover {
   background: #20a164;
+}
+
+.detail-btn {
+  background: #6c8c94;
+}
+
+.detail-btn:hover {
+  background: #5c7a82;
 }
 
 .export-control select,

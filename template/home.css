@@ -69,6 +69,7 @@ body {
 .badge.storage { background: #7f8f72; }
 .badge.human { background: #8a78a9; }
 .badge.report { background: #6c8c94; }
+.badge.tickets { background: #b56f45; }
 
 .service-card h2 {
   margin: 0 0 10px;
@@ -90,6 +91,29 @@ body {
   background: linear-gradient(135deg, rgba(40, 181, 113, 0.28), rgba(242, 200, 75, 0.24));
   color: #f7fffa;
   font-size: 64px;
+}
+
+.ticket-card-art {
+  height: 170px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(181, 111, 69, 0.42), rgba(59, 130, 145, 0.28)),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px 18px);
+  color: #fff8ed;
+  font-weight: 800;
+}
+
+.ticket-card-art i {
+  font-size: 54px;
+}
+
+.ticket-card-art span {
+  align-self: start;
+  margin-top: -34px;
+  direction: ltr;
+  font-size: 22px;
 }
 
 .connect-btn {

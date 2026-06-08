@@ -38,6 +38,8 @@ async function loadDashboardData() {
     renderUsers("recording_storage", data?.recording_storage?.active_users);
     renderWaiting("human_service", data?.human_service?.waiting);
     renderUsers("human_service", data?.human_service?.active_users);
+    renderWaiting("support_tickets", data?.support_tickets?.waiting);
+    renderUsers("support_tickets", data?.support_tickets?.active_users);
   } catch (err) {
     console.error("dashboard data error", err);
   }

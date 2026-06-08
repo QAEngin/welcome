@@ -1,0 +1,246 @@
+@import url('brand.css');
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--brand-bg);
+}
+
+.tech-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+  font-family: var(--font-mono);
+}
+
+.admin-page {
+  padding: 24px 32px 40px;
+}
+
+.admin-panel {
+  width: min(100%, 1480px);
+  margin: 0 auto;
+}
+
+.admin-header,
+.filters,
+.form-grid,
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-header {
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.admin-header h1 {
+  margin: 2px 0 0;
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--brand-primary-700);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.filters,
+.create-user-card {
+  margin-bottom: 16px;
+}
+
+.filters,
+.create-user-card,
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.filters,
+.create-user-card {
+  padding: 14px;
+}
+
+.filters input,
+.filters select,
+.form-grid input,
+.form-grid select {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 0 11px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.filters input:focus,
+.filters select:focus,
+.form-grid input:focus,
+.form-grid select:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(45, 140, 255, 0.14);
+}
+
+.primary-btn,
+.secondary-btn,
+.table-btn,
+.link-btn {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.primary-btn {
+  background: var(--brand-primary);
+  color: #fff;
+  border-color: var(--brand-primary);
+}
+
+.primary-btn:hover {
+  background: var(--brand-primary-600);
+  border-color: var(--brand-primary-600);
+}
+
+.secondary-btn,
+.table-btn {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--line);
+}
+
+.secondary-btn:hover,
+.table-btn:hover {
+  background: var(--surface-2);
+  border-color: var(--line-strong);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 11px 10px;
+  border-bottom: 1px solid #f0f3f7;
+  color: var(--text);
+  text-align: left;
+  vertical-align: top;
+}
+
+[dir="rtl"] .admin-table th,
+[dir="rtl"] .admin-table td {
+  text-align: right;
+}
+
+[dir="rtl"] .admin-table .tech-ltr {
+  text-align: left;
+}
+
+.admin-table th {
+  position: sticky;
+  top: 0;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-table tbody tr:hover {
+  background: var(--surface-soft);
+}
+
+.badge {
+  min-width: 78px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  padding: 5px 9px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge.success {
+  background: var(--success-soft);
+  color: #08734c;
+}
+
+.badge.danger {
+  background: var(--danger-soft);
+  color: #ad2626;
+}
+
+.badge.info {
+  background: var(--brand-primary-soft);
+  color: var(--brand-primary-700);
+}
+
+.badge.neutral {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.inline-message {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hidden {
+  display: none;
+}
+
+code {
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+@media (max-width: 960px) {
+  .admin-page {
+    padding: 18px 14px 28px;
+  }
+
+  .admin-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filters input,
+  .filters select,
+  .filters button,
+  .form-grid input,
+  .form-grid select,
+  .form-grid button {
+    flex: 1 1 180px;
+  }
+}

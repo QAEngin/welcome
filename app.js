@@ -81,7 +81,79 @@ function resetSearchState(){
     clearSearchResults();
 }
 
+function showAllCards(){
+
+    const servicesSection =
+        document.getElementById("services");
+
+    closeMobileGuideMenu();
+    resetSearchState();
+    clearActiveCards();
+
+    if(servicesSection){
+
+        servicesSection.scrollIntoView({
+
+            behavior:"smooth",
+
+            block:"start"
+        });
+    }
+}
+
+function toggleMobileGuideMenu(){
+
+    const menu =
+        document.getElementById("mobileGuideMenu");
+
+    const button =
+        document.querySelector(".nav-menu-action");
+
+    if(!menu){
+
+        return;
+    }
+
+    const isOpen =
+        menu.classList.toggle("active");
+
+    if(button){
+
+        button.setAttribute(
+            "aria-expanded",
+            isOpen ? "true" : "false"
+        );
+    }
+}
+
+function closeMobileGuideMenu(){
+
+    const menu =
+        document.getElementById("mobileGuideMenu");
+
+    const button =
+        document.querySelector(".nav-menu-action");
+
+    if(menu){
+
+        menu.classList.remove("active");
+    }
+
+    if(button){
+
+        button.setAttribute("aria-expanded", "false");
+    }
+}
+
+function openGuideFromMobileMenu(type){
+
+    closeMobileGuideMenu();
+    toggleGuide(type);
+}
+
 function goHome(){
+
+    closeMobileGuideMenu();
 
     const guideContent =
         document.getElementById("guideContent");
@@ -115,7 +187,7 @@ function bindTopBannerHome(){
 
     topBanner.addEventListener("click", event => {
 
-        if(event.target.closest(".nav-support-btn, .nav-link")){
+        if(event.target.closest(".nav-support-btn, .nav-link, .mobile-guide-menu")){
 
             return;
         }
@@ -450,6 +522,266 @@ class="guide-screenshot"
 alt="מספרי עקוב אחרי לאחר שמירה בדפדפן">
 
 </div>
+
+</div>
+
+`,
+
+cloudSoftphone: `
+
+<div class="guide-box" id="pdf-content">
+
+<h2>
+מדריך התקנת והגדרת Cloud Softphone
+</h2>
+
+<p class="guide-intro">
+מדריך זה מסביר כיצד להתקין, להגדיר ולהשתמש באפליקציית Cloud Softphone בטלפון הנייד.
+</p>
+
+<div class="sub-guide">
+
+<h3>
+דרישות לפני ההתקנה
+</h3>
+
+<p>
+לפני תחילת ההתקנה יש לוודא כי ברשותכם:
+</p>
+
+<ul class="guide-steps">
+<li>
+טלפון חכם עם מערכת Android או iOS.
+<br>
+Android:
+<a href="https://play.google.com/store/apps/details?id=cz.acrobits.softphone.cloudphone&hl=en" target="_blank" rel="noopener">
+Google Play
+</a>
+<br>
+iOS:
+<a href="https://apps.apple.com/us/app/cloud-softphone/id567475545" target="_blank" rel="noopener">
+App Store
+</a>
+</li>
+<li>קוד QR אישי שנשלח אליכם ממנהל מערכת הטלפוניה.</li>
+</ul>
+
+<p class="guide-note">
+חשוב: קוד ה-QR הוא אישי ומקושר למשתמש שלכם בלבד. אין לשתף אותו עם משתמשים אחרים.
+</p>
+
+</div>
+
+<div class="sub-guide">
+
+<h3>
+התקנת האפליקציה
+</h3>
+
+<ol class="guide-steps">
+<li>במכשיר נייד תפתחו את חנות האפליקציות.</li>
+<li>חפשו את האפליקציה Cloud Softphone.</li>
+<li>התקינו את האפליקציה במכשיר.</li>
+</ol>
+
+<figure class="guide-figure cloud-softphone-figure cloud-softphone-store">
+<img
+src="guides/CloudSoftphone/Picture1.png"
+class="guide-screenshot"
+alt="Cloud Softphone בחנות האפליקציות">
+<figcaption>
+איתור אפליקציית Cloud Softphone בחנות האפליקציות.
+</figcaption>
+</figure>
+
+<p>
+לאחר סיום ההתקנה, פתחו את האפליקציה כדי להתחיל בתהליך ההגדרה.
+</p>
+
+</div>
+
+<div class="sub-guide">
+
+<h3>
+הגדרת האפליקציה באמצעות קוד QR
+</h3>
+
+<ol class="guide-steps">
+<li>פתחו את אפליקציית Cloud Softphone.</li>
+<li>בחרו באפשרות Scan QR / סרוק QR.</li>
+<li>אשרו לאפליקציה גישה למצלמת המכשיר.</li>
+<li>כוונו את המצלמה אל קוד ה-QR שקיבלתם.</li>
+</ol>
+
+<figure class="guide-figure cloud-softphone-figure cloud-softphone-phone">
+<img
+src="guides/CloudSoftphone/Picture4.png"
+class="guide-screenshot"
+alt="סריקת QR באפליקציית Cloud Softphone">
+<figcaption>
+בחירת Scan QR וסריקת הקוד האישי.
+</figcaption>
+</figure>
+
+<p>
+לאחר סריקת הקוד, האפליקציה תבצע הגדרה אוטומטית של החשבון.
+</p>
+
+<p>
+יש אפשרות בחירת QR דרך גלריית תמונות.
+</p>
+
+<p class="guide-note">
+יש להמתין מספר רגעים עד לסיום התהליך. בסיום ההגדרה תוכלו להתחיל לבצע ולקבל שיחות.
+</p>
+
+</div>
+
+<div class="sub-guide">
+
+<h3>
+מבנה האפליקציה
+</h3>
+
+<p>
+האפליקציה כוללת ארבע לשוניות מרכזיות:
+</p>
+
+<ul class="guide-steps">
+<li>לוח מקשים</li>
+<li>חיוג מהיר</li>
+<li>היסטוריה</li>
+<li>אנשי קשר</li>
+</ul>
+
+<figure class="guide-figure cloud-softphone-figure cloud-softphone-tabs">
+<img
+src="guides/CloudSoftphone/Picture2.png"
+class="guide-screenshot"
+alt="לשוניות מרכזיות באפליקציית Cloud Softphone">
+<figcaption>
+ארבע הלשוניות המרכזיות באפליקציה.
+</figcaption>
+</figure>
+
+<h3>
+לוח מקשים (Dial Pad)
+</h3>
+
+<p>
+לשונית זו נפתחת כברירת מחדל בעת פתיחת האפליקציה. באמצעות מסך זה ניתן לבצע שיחות טלפון, להפעיל או לכבות מצב נא לא להפריע (DND), לבדוק הודעות קוליות ולגשת להגדרות האפליקציה.
+</p>
+
+<h3>
+חיוג מהיר (Quick Dial)
+</h3>
+
+<p>
+לשונית חיוג מהיר מאפשרת להוסיף אנשי קשר אליהם אתם מתקשרים לעיתים קרובות, כולל משתמשים פנימיים במערכת ומספרי טלפון חיצוניים.
+</p>
+
+<h3>
+היסטוריית שיחות (History)
+</h3>
+
+<p>
+לשונית היסטוריה מציגה את כל השיחות שבוצעו או התקבלו. במסך זה ניתן לצפות ברשימת השיחות, לחפש שיחות קודמות ולצפות בפרטי שיחה באמצעות לחיצה על סמל המידע לצד השיחה.
+</p>
+
+<h3>
+אנשי קשר (Contacts)
+</h3>
+
+<p>
+לשונית אנשי קשר מציגה את אנשי הקשר השמורים במכשיר הנייד. בפעם הראשונה שתיכנסו ללשונית זו, ייתכן שתתבקשו לאשר לאפליקציה גישה לאנשי הקשר במכשיר.
+</p>
+
+</div>
+
+<div class="sub-guide">
+
+<h3>
+אפשרויות בזמן שיחה
+</h3>
+
+<p>
+כאשר שיחה פעילה, יופיע מסך השיחה ובו ניתן להשתמש בפונקציות הבאות:
+</p>
+
+<ul class="guide-steps">
+<li>Mute - השתקת המיקרופון</li>
+<li>Speaker - הפעלת רמקול</li>
+<li>Transfer - העברת השיחה למשתמש אחר</li>
+<li>Add Call - הוספת משתתף לשיחת ועידה</li>
+<li>Hold - העברת השיחה להמתנה</li>
+<li>Record - הקלטת השיחה</li>
+<li>Video Call - שיחת וידאו, זמין בין שני משתמשי Cloud Softphone בלבד</li>
+</ul>
+
+<p class="guide-note">
+הערה: אפשרות Attended Transfer (Att.) אינה פעילה כברירת מחדל ולכן ניתן להתעלם ממנה.
+</p>
+
+</div>
+
+<div class="sub-guide">
+
+<h3>
+הפעלה או ביטול מצב "נא לא להפריע" (DND)
+</h3>
+
+<p>
+מצב נא לא להפריע משתיק את השיחות באפליקציה. שיחות עדיין יוכלו להתקבל בטלפון השולחני, במידה וקיים.
+</p>
+
+<ol class="guide-steps">
+<li>פתחו את האפליקציה Cloud Softphone.</li>
+<li>עברו ללשונית לוח מקשים.</li>
+<li>בפינה השמאלית העליונה בחרו SIP Softphone.</li>
+<li>הפעילו או כבו את מתג DND.</li>
+</ol>
+
+</div>
+
+<div class="sub-guide">
+
+<h3>
+איפוס האפליקציה
+</h3>
+
+<p>
+במקרה של תקלה או צורך בהגדרה מחדש של האפליקציה:
+</p>
+
+<ol class="guide-steps">
+<li>עברו ללשונית לוח מקשים.</li>
+<li>לחצו על סמל שלוש הנקודות בפינה הימנית העליונה.</li>
+<li>בחרו הגדרות (Settings).</li>
+<li>במסך ההגדרות בחרו Reset Application / איפוס יישום.</li>
+</ol>
+
+<figure class="guide-figure cloud-softphone-figure cloud-softphone-phone">
+<img
+src="guides/CloudSoftphone/Picture3.png"
+class="guide-screenshot"
+alt="איפוס אפליקציית Cloud Softphone דרך Settings">
+<figcaption>
+בחירה באפשרות Reset Application במסך ההגדרות.
+</figcaption>
+</figure>
+
+<p>
+לאחר האיפוס יש לפנות למנהל מערכת הטלפוניה ולקבל קוד QR חדש. לאחר קבלת הקוד, אפשרו שוב גישה למצלמה, סרקו את קוד ה-QR החדש והמתינו לסיום תהליך ההגדרה.
+</p>
+
+</div>
+
+<button class="download-btn"
+onclick="openGuidePreview('מדריך Cloud Softphone')">
+
+הצגת מדריך PDF
+
+</button>
 
 </div>
 
@@ -792,6 +1124,8 @@ disabled>
 
 function showFeatureLookup(){
 
+    closeMobileGuideMenu();
+
     const guideContent =
         document.getElementById("guideContent");
 
@@ -953,6 +1287,8 @@ function showFeatureSupportPopup(){
 }
 
 function toggleGuide(type){
+
+    closeMobileGuideMenu();
 
     const guideContent =
         document.getElementById("guideContent");

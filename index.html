@@ -22,11 +22,30 @@
             </a>
 
             <div class="nav-center" aria-label="ניווט">
-                <a href="#services" class="nav-link">שירותים</a>
-                <a href="#search" class="nav-link">חיפוש</a>
-                <button class="nav-link nav-action" type="button" onclick="showFeatureLookup()">
-                    אזור אישי
+                <a href="#services" class="nav-link nav-services-link">
+                    <span>שירותים</span>
+                </a>
+                <a href="#top" class="nav-link nav-home-link" onclick="goHome()" aria-label="בית" title="בית">
+                    <i class="fa-solid fa-house" aria-hidden="true"></i>
+                </a>
+                <a href="#search" class="nav-link nav-search-link" onclick="closeMobileGuideMenu()" aria-label="חיפוש" title="חיפוש">
+                    <i class="fa-solid fa-magnifying-glass nav-mobile-icon" aria-hidden="true"></i>
+                    <span>חיפוש</span>
+                </a>
+                <button class="nav-link nav-action nav-icon-action" type="button" onclick="showFeatureLookup()" aria-label="אזור אישי" title="אזור אישי">
+                    <i class="fa-solid fa-user" aria-hidden="true"></i>
                 </button>
+                <button class="nav-link nav-menu-action" type="button" onclick="toggleMobileGuideMenu()" aria-label="תפריט מדריכים" title="תפריט מדריכים" aria-expanded="false">
+                    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <div class="mobile-guide-menu" id="mobileGuideMenu" aria-label="תפריט מדריכים">
+                <button type="button" onclick="openGuideFromMobileMenu('fax')">מייל 2 פקס</button>
+                <button type="button" onclick="openGuideFromMobileMenu('sms')">SMS</button>
+                <button type="button" onclick="openGuideFromMobileMenu('recordings')">הקלטות שיחות</button>
+                <button type="button" onclick="openGuideFromMobileMenu('yealink')">מדריך Yealink</button>
+                <button type="button" onclick="openGuideFromMobileMenu('cloudSoftphone')">Cloud Softphone</button>
             </div>
 
             <a href="https://wa.me/972778066666" target="_blank" rel="noopener" class="nav-support-btn">
@@ -131,6 +150,14 @@
                 </span>
                 <span class="card-title">טלפוני Yealink</span>
                 <span class="card-text">מדריך משתמש, פתרון תקלות וסרטוני הדרכה.</span>
+            </button>
+
+            <button class="card" type="button" onclick="toggleGuide('cloudSoftphone')">
+                <span class="card-icon">
+                    <i class="fa-solid fa-cloud-arrow-down" aria-hidden="true"></i>
+                </span>
+                <span class="card-title">מדריך התקנת והגדרת Cloud Softphone</span>
+                <span class="card-text">התקנה, הגדרה ושימוש באפליקציית Cloud Softphone בנייד.</span>
             </button>
         </section>
 

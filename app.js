@@ -1381,6 +1381,36 @@ function searchGuides(){
     renderSearchResults(matches, value);
 }
 
+function openInitialGuideFromUrl(){
+
+    const params =
+        new URLSearchParams(window.location.search);
+
+    const requestedGuide =
+        params.get("guide");
+
+    if(!requestedGuide || !guides[requestedGuide]){
+
+        return;
+    }
+
+    window.setTimeout(() => {
+
+        toggleGuide(requestedGuide);
+
+        const cleanUrl =
+            `${window.location.pathname}${window.location.hash || ""}`;
+
+        window.history.replaceState(null, "", cleanUrl);
+
+    }, 0);
+}
+
+window.addEventListener(
+    "load",
+    openInitialGuideFromUrl
+);
+
 function openGuidePreview(title){
 
     const element =
@@ -1501,3 +1531,4 @@ function openGuidePreview(title){
     doc.body.appendChild(actionBar);
     doc.body.appendChild(wrapper);
 }
+

@@ -846,6 +846,16 @@ A) טיפול ברעשים בשמע
 
 </ol>
 
+<figure class="guide-figure">
+<img
+src="assets/reboot.jpeg"
+class="guide-screenshot"
+alt="מסך אתחול בסיס בטלפון Yealink">
+<figcaption>
+שלב אתחול הבסיס לטיפול ברעשים בשמע בדגם W70B.
+</figcaption>
+</figure>
+
 <p>
 יש להמתין 2-4 דקות עד שהבסיס יעלה מחדש ויירשם למרכזייה.
 </p>
@@ -1381,36 +1391,6 @@ function searchGuides(){
     renderSearchResults(matches, value);
 }
 
-function openInitialGuideFromUrl(){
-
-    const params =
-        new URLSearchParams(window.location.search);
-
-    const requestedGuide =
-        params.get("guide");
-
-    if(!requestedGuide || !guides[requestedGuide]){
-
-        return;
-    }
-
-    window.setTimeout(() => {
-
-        toggleGuide(requestedGuide);
-
-        const cleanUrl =
-            `${window.location.pathname}${window.location.hash || ""}`;
-
-        window.history.replaceState(null, "", cleanUrl);
-
-    }, 0);
-}
-
-window.addEventListener(
-    "load",
-    openInitialGuideFromUrl
-);
-
 function openGuidePreview(title){
 
     const element =
@@ -1531,4 +1511,3 @@ function openGuidePreview(title){
     doc.body.appendChild(actionBar);
     doc.body.appendChild(wrapper);
 }
-

@@ -293,6 +293,20 @@ a{
     line-height:1.25;
 }
 
+.brand-card-phone{
+    color:#ffffff;
+    font-size:18px;
+    font-weight:800;
+    text-decoration:none;
+    width:fit-content;
+}
+
+.brand-card-phone:hover,
+.brand-card-phone:focus-visible{
+    color:var(--hot-pink-light);
+    outline:none;
+}
+
 .brand-service-list{
     display:flex;
     flex-wrap:wrap;

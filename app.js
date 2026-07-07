@@ -846,6 +846,16 @@ A) טיפול ברעשים בשמע
 
 </ol>
 
+<figure class="guide-figure">
+<img
+src="assets/reboot.jpeg"
+class="guide-screenshot"
+alt="מסך אתחול בסיס בטלפון Yealink">
+<figcaption>
+שלב אתחול הבסיס לטיפול ברעשים בשמע בדגם W70B.
+</figcaption>
+</figure>
+
 <p>
 יש להמתין 2-4 דקות עד שהבסיס יעלה מחדש ויירשם למרכזייה.
 </p>
